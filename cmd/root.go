@@ -1,0 +1,38 @@
+package cmd
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/anyproto/anytype-cli/cmd/auth"
+	"github.com/anyproto/anytype-cli/cmd/daemon"
+	"github.com/anyproto/anytype-cli/cmd/server"
+	"github.com/anyproto/anytype-cli/cmd/shell"
+	"github.com/anyproto/anytype-cli/cmd/space"
+	"github.com/anyproto/anytype-cli/cmd/token"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "anyctl <command> <subcommand> [flags]",
+	Short: "Anytype CLI",
+	Long:  "Seamlessly interact with Anytype from the command line",
+}
+
+// Execute runs the root command
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.AddCommand(
+		auth.NewAuthCmd(),
+		server.NewServerCmd(),
+		shell.NewShellCmd(rootCmd),
+		space.NewSpaceCmd(),
+		token.NewTokenCmd(),
+		daemon.NewDaemonCmd(),
+	)
+}
