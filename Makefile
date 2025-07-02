@@ -1,4 +1,4 @@
 .PHONY: build
 
 build:
-	go build -o dist/
+	go build -o dist/anytype

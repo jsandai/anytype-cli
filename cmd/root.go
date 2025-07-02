@@ -14,7 +14,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "anyctl <command> <subcommand> [flags]",
+	Use:   "anytype <command> <subcommand> [flags]",
 	Short: "Anytype CLI",
 	Long:  "Seamlessly interact with Anytype from the command line",
 }
