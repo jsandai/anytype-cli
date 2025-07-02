@@ -1,6 +1,31 @@
 # Anytype CLI
 
-## Run headless MW server through CLI
+## Setup
+
+### Download Pre-built Binaries
+
+The easiest way to get started is to download the pre-built binaries:
+
+```bash
+# Interactive mode - select your platform with arrow keys
+./setup.sh
+
+# Direct download - specify platform and architecture
+./setup.sh linux amd64
+./setup.sh darwin arm64
+./setup.sh windows amd64
+```
+
+Available platforms:
+- Linux AMD64 / ARM64
+- macOS Apple Silicon (ARM64) / Intel (AMD64)
+- Windows AMD64
+
+The setup script will download and extract the binaries to the `dist/` directory.
+
+### Build from Source
+
+If you prefer to build from source:
 
 Expected repository structure:
 
@@ -10,7 +35,7 @@ parent-directory/
 └── anytype-cli/
 ```
 
-1. **In `anytype-heart` (go-4643-headless-client-anytype-cli) directory:**
+1. **In `anytype-heart` directory:**
 
 ```bash
 make install-dev-cli
@@ -22,22 +47,24 @@ make install-dev-cli
 make build
 ```
 
-3. **Start the daemon:**
+## Usage
+
+### Start the daemon
 
 - To run in the foreground:
 
 ```bash
-./dist/anytype-cli daemon
+./dist/anytype daemon
 ```
 
 - To run in the background:
 
 ```bash
-./dist/anytype-cli daemon &
+./dist/anytype daemon &
 ```
 
-## Auto-approve members in a space
+### Auto-approve members in a space
 
 ```bash
-./dist/anytype-cli space autoapprove --role "Editor" --space "<SpaceId>"
+./dist/anytype space autoapprove --role "Editor" --space "<SpaceId>"
 ```
