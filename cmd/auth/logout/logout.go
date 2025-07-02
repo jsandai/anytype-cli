@@ -14,9 +14,9 @@ func NewLogoutCmd() *cobra.Command {
 		Short: "Log out and remove stored mnemonic from keychain",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := internal.Logout(); err != nil {
-				return fmt.Errorf("X Failed to log out: %w", err)
+				return fmt.Errorf("✗ Failed to log out: %w", err)
 			}
-			fmt.Println("✓ Successfully logged out")
+			fmt.Println("✓ Successfully logged out. Stored mnemonic removed.")
 			return nil
 		},
 	}

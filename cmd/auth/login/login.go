@@ -23,7 +23,7 @@ func NewLoginCmd() *cobra.Command {
 			}
 
 			if err := internal.Login(mnemonic, rootPath); err != nil {
-				return fmt.Errorf("X Failed to log in: %w", err)
+				return fmt.Errorf("✗ Failed to log in: %w", err)
 			}
 			fmt.Println("✓ Successfully logged in")
 			return nil

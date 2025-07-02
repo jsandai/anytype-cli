@@ -14,7 +14,7 @@ func NewCreateCmd() *cobra.Command {
 		Short: "Create a new API token",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := internal.CreateToken(); err != nil {
-				return fmt.Errorf("X Failed to create token: %w", err)
+				return fmt.Errorf("✗ Failed to create token: %w", err)
 			}
 
 			fmt.Println("✓ Token created successfully.")

@@ -26,7 +26,7 @@ func NewStartCmd() *cobra.Command {
 			if err == nil && mnemonic != "" {
 				fmt.Println("ℹ Keychain mnemonic found. Attempting to login...")
 				if err := internal.LoginAccount(mnemonic, ""); err != nil {
-					fmt.Println("X Failed to login using keychain mnemonic:", err)
+					fmt.Println("✗ Failed to login using keychain mnemonic:", err)
 				} else {
 					fmt.Println("✓ Successfully logged in using keychain mnemonic.")
 				}
