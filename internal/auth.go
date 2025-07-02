@@ -192,7 +192,6 @@ func Logout() error {
 	if err := DeleteStoredMnemonic(); err != nil {
 		return fmt.Errorf("failed to delete stored mnemonic: %w", err)
 	}
-	fmt.Println("✓ Successfully logged out. Stored mnemonic removed.")
 
 	return nil
 }
