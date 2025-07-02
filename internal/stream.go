@@ -8,21 +8,23 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/anyproto/anytype-heart/pb"
+	"github.com/anyproto/anytype-heart/pb"
+	"github.com/anyproto/anytype-heart/pb/service"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
+	"github.com/cheggaaa/mb/v3"
 )
 
-// Singleton instance of EventReceiver
+type EventReceiver struct {
+	queue  *mb.MB[*pb.EventMessage]
+	stream service.ClientCommands_ListenSessionEventsClient
+	cancel context.CancelFunc
+	once   sync.Once
+}
+
 var (
 	eventReceiverInstance *EventReceiver
 	erOnce                sync.Once
 )
-
-// EventReceiver is a universal receiver that collects all incoming event messages.
-type EventReceiver struct {
-	lock   *sync.Mutex
-	events []*pb.EventMessage
-}
 
 // ListenForEvents ensures a single EventReceiver instance is used.
 func ListenForEvents(token string) (*EventReceiver, error) {
@@ -36,99 +38,122 @@ func ListenForEvents(token string) (*EventReceiver, error) {
 	return eventReceiverInstance, nil
 }
 
-// ListenForEvents starts the gRPC stream for events using the provided token.
-// It returns an EventReceiver that will store all incoming events.
 func startListeningForEvents(token string) (*EventReceiver, error) {
 	client, err := GetGRPCClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get gRPC client: %w", err)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	req := &pb.StreamRequest{
 		Token: token,
 	}
-	stream, err := client.ListenSessionEvents(context.Background(), req)
+	stream, err := client.ListenSessionEvents(ctx, req)
 	if err != nil {
+		cancel()
 		return nil, fmt.Errorf("failed to start event stream: %w", err)
 	}
 
 	er := &EventReceiver{
-		lock:   &sync.Mutex{},
-		events: make([]*pb.EventMessage, 0),
+		queue:  mb.New[*pb.EventMessage](0), // Unbounded queue
+		stream: stream,
+		cancel: cancel,
 	}
 
-	// Start a goroutine to continuously receive events from the stream.
-	go func() {
-		for {
-			event, err := stream.Recv()
-			if errors.Is(err, io.EOF) {
-				fmt.Println("🔄 Event stream ended, reconnecting...")
-				break
-			}
-			if err != nil {
-				// Check for intentional close
-				if err.Error() == "rpc error: code = Canceled desc = grpc: the client connection is closing" {
-					break
-				}
-				fmt.Errorf("X Event stream error: %w\n", err)
-				break
-			}
-
-			er.lock.Lock()
-			er.events = append(er.events, event.Messages...)
-			er.lock.Unlock()
-		}
-	}()
+	// Start receiving events
+	go er.receiveLoop(ctx)
 
 	return er, nil
 }
 
-// WaitForAccountID continuously checks the stored events until an accountShow event is found.
-// It returns the account ID from that event.
-func WaitForAccountID(er *EventReceiver) (string, error) {
+// receiveLoop continuously receives events from the stream
+func (er *EventReceiver) receiveLoop(ctx context.Context) {
+	defer er.cancel()
+
 	for {
-		er.lock.Lock()
-		// Process recent events first.
-		for i := len(er.events) - 1; i >= 0; i-- {
-			m := er.events[i]
-			if m == nil {
-				continue
+		event, err := er.stream.Recv()
+		if errors.Is(err, io.EOF) {
+			fmt.Println("🔄 Event stream ended")
+			return
+		}
+		if err != nil {
+			if ctx.Err() != nil {
+				// Context cancelled, clean shutdown
+				return
 			}
-			if v := m.GetAccountShow(); v != nil && v.GetAccount() != nil {
-				accountID := v.GetAccount().Id
-				// Mark event as processed.
-				er.events[i] = nil
-				er.lock.Unlock()
-				return accountID, nil
+			fmt.Printf("✗ Event stream error: %v\n", err)
+			return
+		}
+
+		// Add all messages to the queue
+		for _, msg := range event.Messages {
+			if err := er.queue.Add(ctx, msg); err != nil {
+				if ctx.Err() != nil {
+					return
+				}
+				fmt.Printf("✗ Failed to add event to queue: %v\n", err)
 			}
 		}
-		er.lock.Unlock()
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
-// WaitForJoinRequestEvent continuously polls the event receiver until it finds a join request for the specified space.
-// It returns the join request details.
+// WaitForAccountID waits for an accountShow event and returns the account ID
+func WaitForAccountID(er *EventReceiver) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Create a condition that filters for accountShow events
+	cond := er.queue.NewCond().WithFilter(func(msg *pb.EventMessage) bool {
+		return msg.GetAccountShow() != nil && msg.GetAccountShow().GetAccount() != nil
+	})
+
+	msg, err := cond.WaitOne(ctx)
+	if err != nil {
+		return "", fmt.Errorf("timeout waiting for account ID: %w", err)
+	}
+
+	return msg.GetAccountShow().GetAccount().Id, nil
+}
+
+// WaitForJoinRequestEvent waits for a join request for the specified space
 func WaitForJoinRequestEvent(er *EventReceiver, spaceID string) (*model.NotificationRequestToJoin, error) {
-	for {
-		er.lock.Lock()
-		for i := len(er.events) - 1; i >= 0; i-- {
-			m := er.events[i]
-			if m == nil {
-				continue
-			}
-			// Check for a notificationSend event with a join request.
-			if ns := m.GetNotificationSend(); ns != nil && ns.Notification != nil && ns.Notification.GetRequestToJoin() != nil {
-				req := ns.Notification.GetRequestToJoin()
-				if req.SpaceId == spaceID {
-					// Mark event as processed.
-					er.events[i] = nil
-					er.lock.Unlock()
-					return req, nil
-				}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	// Create a condition that filters for join request events
+	cond := er.queue.NewCond().WithFilter(func(msg *pb.EventMessage) bool {
+		if ns := msg.GetNotificationSend(); ns != nil && ns.Notification != nil {
+			if req := ns.Notification.GetRequestToJoin(); req != nil {
+				return req.SpaceId == spaceID
 			}
 		}
-		er.lock.Unlock()
-		time.Sleep(100 * time.Millisecond)
+		return false
+	})
+
+	msg, err := cond.WaitOne(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("timeout waiting for join request: %w", err)
 	}
+
+	return msg.GetNotificationSend().Notification.GetRequestToJoin(), nil
+}
+
+// WaitOne waits for any single event with optional timeout
+func (er *EventReceiver) WaitOne(ctx context.Context) (*pb.EventMessage, error) {
+	return er.queue.WaitOne(ctx)
+}
+
+// WaitForEvent waits for an event matching the predicate
+func (er *EventReceiver) WaitForEvent(ctx context.Context, predicate func(*pb.EventMessage) bool) (*pb.EventMessage, error) {
+	cond := er.queue.NewCond().WithFilter(predicate)
+	return cond.WaitOne(ctx)
+}
+
+// Close stops the event receiver
+func (er *EventReceiver) Close() {
+	er.once.Do(func() {
+		er.cancel()
+		_ = er.queue.Close()
+	})
 }

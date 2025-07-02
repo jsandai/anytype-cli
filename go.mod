@@ -4,6 +4,7 @@ go 1.23.5
 
 require (
 	github.com/anyproto/anytype-heart v0.39.5
+	github.com/cheggaaa/mb/v3 v3.0.2
 	github.com/spf13/cobra v1.8.1
 	github.com/zalando/go-keyring v0.2.6
 	google.golang.org/grpc v1.70.0
