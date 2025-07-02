@@ -127,8 +127,9 @@ func LoginAccount(mnemonic, rootPath string) error {
 func Login(mnemonic, rootPath string) error {
 	usedStoredMnemonic := false
 	if mnemonic == "" {
-		mnemonic, err := GetStoredMnemonic()
-		if err == nil && mnemonic != "" {
+		storedMnemonic, err := GetStoredMnemonic()
+		if err == nil && storedMnemonic != "" {
+			mnemonic = storedMnemonic
 			fmt.Println("Using stored mnemonic from keychain.")
 			usedStoredMnemonic = true
 		} else {
