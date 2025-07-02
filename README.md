@@ -1,31 +1,54 @@
 # Anytype CLI
 
-## Setup
-
-### Download Pre-built Binaries
-
-The easiest way to get started is to download the pre-built binaries:
+## Quick Start
 
 ```bash
-# Interactive mode - select your platform with arrow keys
-./setup.sh
+# Download middleware server
+make download-server
 
-# Direct download - specify platform and architecture
-./setup.sh linux amd64
-./setup.sh darwin arm64
-./setup.sh windows amd64
+# Build and install CLI
+make install
+
+# Start the daemon
+anytype daemon
+
+# In another terminal, start the server
+anytype server start
 ```
 
-Available platforms:
-- Linux AMD64 / ARM64
-- macOS Apple Silicon (ARM64) / Intel (AMD64)
-- Windows AMD64
+## Setup
 
-The setup script will download and extract the binaries to the `dist/` directory.
+### Download Middleware Server
+
+```bash
+make download-server
+```
+
+This downloads the [Anytype middleware server](https://github.com/anyproto/anytype-heart) (grpc-server) to the `dist/` directory.
 
 ### Build from Source
 
-If you prefer to build from source:
+```bash
+make build
+```
+
+Builds the Anytype CLI binary to `dist/anytype`.
+
+### Install
+
+```bash
+# System-wide installation (may require sudo)
+make install
+
+# User-local installation (no sudo required)
+make install-local
+```
+
+The `install` target will install to `/usr/local/bin/anytype`. The `install-local` target installs to `~/.local/bin/anytype`.
+
+### Manual Setup
+
+If you prefer manual setup or need to build from source:
 
 Expected repository structure:
 
