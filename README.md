@@ -1,5 +1,7 @@
 # Anytype CLI
 
+A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). Built for developers to enable [headless instances](https://github.com/anyproto/anytype-heart) or server-side exposure of the [Anytype API](https://github.com/anyproto/anytype-api).
+
 ## Quick Start
 
 ```bash
@@ -16,47 +18,61 @@ anytype daemon
 anytype server start
 ```
 
-## Setup
+## Installation
+
+### Prerequisites
+
+- Go 1.20 or later
+- Git
+- Make
 
 ### Download Middleware Server
+
+The Anytype CLI requires the [Anytype middleware server](https://github.com/anyproto/anytype-heart) to function:
 
 ```bash
 make download-server
 ```
 
-This downloads the [Anytype middleware server](https://github.com/anyproto/anytype-heart) (grpc-server) to the `dist/` directory.
+This downloads the appropriate binary for your platform to the `dist/` directory.
 
-### Build from Source
+### Build and Install
 
 ```bash
+# Build only
 make build
-```
 
-Builds the Anytype CLI binary to `dist/anytype`.
-
-### Install
-
-```bash
-# System-wide installation (may require sudo)
+# Build and install system-wide (may require sudo)
 make install
 
-# User-local installation (no sudo required)
+# Build and install to ~/.local/bin (no sudo required)
 make install-local
 ```
 
-The `install` target will install to `/usr/local/bin/anytype`. The `install-local` target installs to `~/.local/bin/anytype`.
+### Uninstall
 
-### Manual Setup
+```bash
+# Remove system-wide installation
+make uninstall
 
-If you prefer manual setup or need to build from source:
+# Remove user-local installation
+make uninstall-local
+```
 
-Expected repository structure:
+<details>
+<summary>Manual Setup (Advanced)</summary>
+
+If you prefer manual setup or need to build the middleware from source:
+
+#### Expected repository structure:
 
 ```
 parent-directory/
 ├── anytype-heart/
 └── anytype-cli/
 ```
+
+#### Steps:
 
 1. **In `anytype-heart` directory:**
 
@@ -67,27 +83,29 @@ make install-dev-cli
 2. **In `anytype-cli` directory:**
 
 ```bash
-make build
+go build -o dist/anytype
 ```
+
+</details>
 
 ## Usage
 
-### Start the daemon
-
-- To run in the foreground:
-
-```bash
-./dist/anytype daemon
 ```
+anytype <command> <subcommand> [flags]
 
-- To run in the background:
+Commands:
+  auth        Authenticate with Anytype
+  daemon      Run the Anytype background daemon
+  server      Manage the middleware server
+  shell       Start the Anytype interactive shell
+  space       Manage spaces
+  version     Show version information
 
-```bash
-./dist/anytype daemon &
-```
+Examples:
+  anytype daemon                    # Run daemon in foreground
+  anytype server start              # Start the middleware server
+  anytype auth login                # Login with mnemonic
+  anytype space autoapprove         # Auto-approve space join requests
 
-### Auto-approve members in a space
-
-```bash
-./dist/anytype space autoapprove --role "Editor" --space "<SpaceId>"
+Use "anytype <command> --help" for more information about a command.
 ```
