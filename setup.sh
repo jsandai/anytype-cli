@@ -12,15 +12,13 @@ select_option() {
     local key=""
     
     tput civis
+
+    echo "Choose your platform and architecture."
+    echo "Use ↑/↓ arrow keys to move, Enter to select:"
+    echo ""
     
     while true; do
-        clear
-        echo "Anytype Heart Download Script"
-        echo "============================="
-        echo ""
-        echo "Use ↑/↓ arrow keys to move, Enter to select:"
-        echo ""
-        
+        # Draw menu
         for i in "${!options[@]}"; do
             if [ "$i" -eq $selected ]; then
                 echo "  ▶ ${options[$i]}"
@@ -34,28 +32,25 @@ select_option() {
         if [[ $key == $'\x1b' ]]; then
             read -rsn2 key
             case $key in
-                '[A')
-                    if [ $selected -eq 0 ]; then
-                        selected=$((${#options[@]} - 1))
-                    else
-                        ((selected--))
-                    fi
-                    ;;
-                '[B')
-                    if [ $selected -eq $((${#options[@]} - 1)) ]; then
-                        selected=0
-                    else
-                        ((selected++))
-                    fi
-                    ;;
+                '[A') ((selected = selected == 0 ? ${#options[@]} - 1 : selected - 1)) ;;
+                '[B') ((selected = (selected + 1) % ${#options[@]})) ;;
             esac
         elif [[ $key == "" ]]; then
             break
         fi
+        
+        # Move cursor back up to redraw menu
+        tput cuu ${#options[@]}
     done
     
-    tput cnorm
+    # Clear menu lines
+    for ((i=0; i<${#options[@]}; i++)); do
+        tput el
+        [ $i -lt $((${#options[@]} - 1)) ] && tput cud1
+    done
+    tput cuu $((${#options[@]} - 1))
     
+    tput cnorm
     MENU_SELECTION=$selected
 }
 
@@ -98,7 +93,7 @@ else
             ;;
     esac
     
-    clear
+    echo ""
     echo "Selected: ${options[$choice]}"
 fi
 
