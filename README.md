@@ -34,7 +34,7 @@ The Anytype CLI requires the [Anytype middleware server](https://github.com/anyp
 make download-server
 ```
 
-This downloads the appropriate binary for your platform to the `dist/` directory.
+This downloads the latest binary for your platform to the `dist/` directory.
 
 ### Build and Install
 

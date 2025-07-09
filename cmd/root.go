@@ -17,7 +17,7 @@ import (
 
 var (
 	versionFlag bool
-	rootCmd = &cobra.Command{
+	rootCmd     = &cobra.Command{
 		Use:   "anytype <command> <subcommand> [flags]",
 		Short: "Anytype CLI",
 		Long:  "Seamlessly interact with Anytype from the command line",
@@ -40,7 +40,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolVarP(&versionFlag, "version", "v", false, "Show version information")
-	
+
 	rootCmd.AddCommand(
 		auth.NewAuthCmd(),
 		server.NewServerCmd(),

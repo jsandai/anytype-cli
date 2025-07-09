@@ -57,9 +57,9 @@ func AutoapproveTask(ctx context.Context, spaceID, role string) error {
 				continue
 			}
 			if err := internal.ApproveJoinRequest(token, joinReq.SpaceId, joinReq.Identity, permissions); err != nil {
-				fmt.Println("Failed to approve join request: %v", err)
+				fmt.Printf("Failed to approve join request: %v\n", err)
 			} else {
-				fmt.Println("Successfully approved join request for identity %s", joinReq.Identity)
+				fmt.Printf("Successfully approved join request for identity %s\n", joinReq.Identity)
 			}
 		}
 	}

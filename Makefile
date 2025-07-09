@@ -1,6 +1,8 @@
-.PHONY: all download-server build install uninstall install-local uninstall-local update
+.PHONY: all download-server build install uninstall install-local uninstall-local update lint lint-fix install-linter
 
 all: build
+
+GOLANGCI_LINT_VERSION := v2.1.6
 
 VERSION ?= $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -44,3 +46,15 @@ uninstall-local:
 update:
 	@echo "Updating Anytype CLI..."
 	# TODO: implement fetching the latest version from GitHub
+
+install-linter:
+	@echo "Installing golangci-lint..."
+	@go install github.com/daixiang0/gci@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@echo "golangci-lint installed successfully"
+
+lint:
+	@golangci-lint run ./...
+
+lint-fix:
+	@golangci-lint run --fix ./...
