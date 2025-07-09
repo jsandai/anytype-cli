@@ -10,7 +10,6 @@ import (
 	"github.com/anyproto/anytype-cli/cmd/server"
 	"github.com/anyproto/anytype-cli/cmd/shell"
 	"github.com/anyproto/anytype-cli/cmd/space"
-	"github.com/anyproto/anytype-cli/cmd/token"
 )
 
 var rootCmd = &cobra.Command{
@@ -32,7 +31,6 @@ func init() {
 		server.NewServerCmd(),
 		shell.NewShellCmd(rootCmd),
 		space.NewSpaceCmd(),
-		token.NewTokenCmd(),
 		daemon.NewDaemonCmd(),
 	)
 }
