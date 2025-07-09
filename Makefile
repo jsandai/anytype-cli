@@ -5,13 +5,17 @@ all: build
 GOLANGCI_LINT_VERSION := v2.1.6
 
 VERSION ?= $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
-COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M:%S')
-GIT_STATE := $(shell git diff --quiet 2>/dev/null && echo "clean" || echo "dirty")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_TIME ?= $(shell date -u '+%Y-%m-%d %H:%M:%S')
+GIT_STATE ?= $(shell git diff --quiet 2>/dev/null && echo "clean" || echo "dirty")
 LDFLAGS := -X 'github.com/anyproto/anytype-cli/internal.Version=$(VERSION)' \
            -X 'github.com/anyproto/anytype-cli/internal.Commit=$(COMMIT)' \
            -X 'github.com/anyproto/anytype-cli/internal.BuildTime=$(BUILD_TIME)' \
            -X 'github.com/anyproto/anytype-cli/internal.GitState=$(GIT_STATE)'
+
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+OUTPUT ?= dist/anytype
 
 download-server:
 	@echo "Downloading Anytype Middleware Server..."
@@ -19,8 +23,8 @@ download-server:
 
 build:
 	@echo "Building Anytype CLI..."
-	@go build -ldflags "$(LDFLAGS)" -o dist/anytype
-	@echo "Built successfully: dist/anytype"
+	@GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "$(LDFLAGS)" -o $(OUTPUT)
+	@echo "Built successfully: $(OUTPUT)"
 
 install: build
 	@echo "Installing Anytype CLI..."

@@ -56,18 +56,15 @@ jobs:
 
       - name: Build binary
         env:
+          VERSION: ${{ github.ref_name }}
+          GIT_STATE: clean
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          OUTPUT: anytype-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
         run: |
-          VERSION="${{ github.ref_name }}"
-          COMMIT=$(git rev-parse --short HEAD)
-          BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S')
-          LDFLAGS="-X 'github.com/anyproto/anytype-cli/internal.Version=${VERSION}' \
-                   -X 'github.com/anyproto/anytype-cli/internal.Commit=${COMMIT}' \
-                   -X 'github.com/anyproto/anytype-cli/internal.BuildTime=${BUILD_TIME}' \
-                   -X 'github.com/anyproto/anytype-cli/internal.GitState=clean'"
-          
-          go build -ldflags "${LDFLAGS}" -o anytype-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
+          export COMMIT=$(echo "${{ github.sha }}" | cut -c1-7)
+          export BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S')
+          make build
 
       - name: Compress binary
         run: |
