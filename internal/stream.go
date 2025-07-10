@@ -48,11 +48,8 @@ func startListeningForEvents(token string) (*EventReceiver, error) {
 	authCtx := ClientContextWithAuth(token)
 	ctx, cancel := context.WithCancel(authCtx)
 
-	// Create a timeout context for the initial connection
-	connectCtx, connectCancel := context.WithTimeout(authCtx, defaultTimeout)
-	defer connectCancel()
-
-	stream, err := client.ListenSessionEvents(connectCtx, &pb.StreamRequest{
+	// Use the authenticated context directly for the stream
+	stream, err := client.ListenSessionEvents(ctx, &pb.StreamRequest{
 		Token: token,
 	})
 	if err != nil {
@@ -103,7 +100,7 @@ func (er *EventReceiver) receiveLoop(ctx context.Context) {
 
 // WaitForAccountID waits for an accountShow event and returns the account ID
 func WaitForAccountID(er *EventReceiver) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Create a condition that filters for accountShow events
