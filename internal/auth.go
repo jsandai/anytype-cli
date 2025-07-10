@@ -87,8 +87,8 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	if err != nil {
 		return err
 	}
+
 	err = SaveToken(sessionToken)
-	fmt.Println("ℹ Session token:", sessionToken)
 	if err != nil {
 		return fmt.Errorf("failed to save session token: %w", err)
 	}
