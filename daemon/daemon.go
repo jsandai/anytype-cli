@@ -175,6 +175,7 @@ func (m *Manager) handleStatusTask(w http.ResponseWriter, r *http.Request) {
 
 // StartManager launches the daemon's HTTP server.
 func StartManager(addr string) error {
+
 	manager := NewManager()
 	srv := &http.Server{
 		Addr:              addr,
@@ -203,11 +204,17 @@ func StartManager(addr string) error {
 
 	// Set up channel on which to send signal notifications.
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(quit,
+		syscall.SIGINT,  // Ctrl+C
+		syscall.SIGTERM, // kill (default)
+		syscall.SIGHUP,  // terminal closed
+		syscall.SIGQUIT, // Ctrl+\
+		syscall.SIGABRT, // abort() called
+	)
 
 	// Block until we receive our signal.
-	<-quit
-	fmt.Println("Daemon is shutting down...")
+	sig := <-quit
+	fmt.Printf("Daemon received signal %v, shutting down...\n", sig)
 
 	// First, tell the task manager to stop all tasks.
 	GetTaskManager().StopAll()
