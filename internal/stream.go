@@ -24,16 +24,16 @@ type EventReceiver struct {
 var (
 	eventReceiverInstance *EventReceiver
 	erOnce                sync.Once
+	erInitErr             error
 )
 
 // ListenForEvents ensures a single EventReceiver instance is used.
 func ListenForEvents(token string) (*EventReceiver, error) {
-	var err error
 	erOnce.Do(func() {
-		eventReceiverInstance, err = startListeningForEvents(token)
+		eventReceiverInstance, erInitErr = startListeningForEvents(token)
 	})
-	if err != nil {
-		return nil, err
+	if erInitErr != nil {
+		return nil, erInitErr
 	}
 	return eventReceiverInstance, nil
 }
@@ -44,24 +44,27 @@ func startListeningForEvents(token string) (*EventReceiver, error) {
 		return nil, fmt.Errorf("failed to get gRPC client: %w", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	// Create authenticated context with cancel capability for the stream
+	authCtx := ClientContextWithAuth(token)
+	ctx, cancel := context.WithCancel(authCtx)
 
-	req := &pb.StreamRequest{
+	// Create a timeout context for the initial connection
+	connectCtx, connectCancel := context.WithTimeout(authCtx, defaultTimeout)
+	defer connectCancel()
+
+	stream, err := client.ListenSessionEvents(connectCtx, &pb.StreamRequest{
 		Token: token,
-	}
-	stream, err := client.ListenSessionEvents(ctx, req)
+	})
 	if err != nil {
 		cancel()
 		return nil, fmt.Errorf("failed to start event stream: %w", err)
 	}
 
 	er := &EventReceiver{
-		queue:  mb.New[*pb.EventMessage](0), // Unbounded queue
+		queue:  mb.New[*pb.EventMessage](0),
 		stream: stream,
 		cancel: cancel,
 	}
-
-	// Start receiving events
 	go er.receiveLoop(ctx)
 
 	return er, nil
