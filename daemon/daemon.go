@@ -61,6 +61,10 @@ func (m *Manager) handleStartTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+	r = r.WithContext(ctx)
+
 	var req TaskRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -103,6 +107,10 @@ func (m *Manager) handleStopTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "only POST allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+	r = r.WithContext(ctx)
 
 	var req TaskRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

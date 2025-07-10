@@ -27,7 +27,6 @@ var (
 
 // GetGRPCClient initializes (if needed) and returns the shared gRPC client
 func GetGRPCClient() (service.ClientCommandsClient, error) {
-	// Ensure we only initialize once (singleton)
 	once.Do(func() {
 		var err error
 		grpcConn, err = grpc.NewClient("dns:///127.0.0.1:31007", grpc.WithTransportCredentials(insecure.NewCredentials()))
