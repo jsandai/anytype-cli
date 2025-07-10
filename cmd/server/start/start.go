@@ -15,6 +15,9 @@ func NewStartCmd() *cobra.Command {
 		Use:   "start",
 		Short: "Start the Anytype local server",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			rootPath, _ := cmd.Flags().GetString("path")
+			apiAddr, _ := cmd.Flags().GetString("api-addr")
+
 			resp, err := daemon.SendTaskStart("server", nil)
 			if err != nil {
 				return fmt.Errorf("failed to start server: %w", err)
@@ -25,7 +28,7 @@ func NewStartCmd() *cobra.Command {
 			mnemonic, err := internal.GetStoredMnemonic()
 			if err == nil && mnemonic != "" {
 				fmt.Println("ℹ Keychain mnemonic found. Attempting to login...")
-				if err := internal.LoginAccount(mnemonic, ""); err != nil {
+				if err := internal.LoginAccount(mnemonic, rootPath, apiAddr); err != nil {
 					fmt.Println("✗ Failed to login using keychain mnemonic:", err)
 				} else {
 					fmt.Println("✓ Successfully logged in using keychain mnemonic.")
@@ -36,6 +39,9 @@ func NewStartCmd() *cobra.Command {
 			return nil
 		},
 	}
+
+	startCmd.Flags().String("path", "", "Custom root path for wallet recovery")
+	startCmd.Flags().String("api-addr", "", "API listen address (default: 127.0.0.1:31009)")
 
 	return startCmd
 }

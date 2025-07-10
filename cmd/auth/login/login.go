@@ -16,13 +16,14 @@ func NewLoginCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mnemonic, _ := cmd.Flags().GetString("mnemonic")
 			rootPath, _ := cmd.Flags().GetString("path")
+			apiAddr, _ := cmd.Flags().GetString("api-addr")
 
 			statusResp, err := daemon.SendTaskStatus("server")
 			if err != nil || statusResp.Status != "running" {
 				return fmt.Errorf("server is not running")
 			}
 
-			if err := internal.Login(mnemonic, rootPath); err != nil {
+			if err := internal.Login(mnemonic, rootPath, apiAddr); err != nil {
 				return fmt.Errorf("✗ Failed to log in: %w", err)
 			}
 			fmt.Println("✓ Successfully logged in")
@@ -33,6 +34,7 @@ func NewLoginCmd() *cobra.Command {
 
 	loginCmd.Flags().String("mnemonic", "", "Provide mnemonic (12 words) for authentication")
 	loginCmd.Flags().String("path", "", "Provide custom root path for wallet recovery")
+	loginCmd.Flags().String("api-addr", "", "API listen address (default: 127.0.0.1:31009)")
 
 	return loginCmd
 }

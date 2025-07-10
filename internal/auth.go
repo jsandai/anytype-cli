@@ -41,9 +41,12 @@ func getDefaultWorkDir() string {
 }
 
 // LoginAccount performs the common steps for logging in with a given mnemonic and root path.
-func LoginAccount(mnemonic, rootPath string) error {
+func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	if rootPath == "" {
 		rootPath = getDefaultDataPath()
+	}
+	if apiAddr == "" {
+		apiAddr = "127.0.0.1:31009"
 	}
 
 	client, err := GetGRPCClient()
@@ -114,7 +117,7 @@ func LoginAccount(mnemonic, rootPath string) error {
 	_, err = client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
 		DisableLocalNetworkSync: false,
 		Id:                      accountID,
-		JsonApiListenAddr:       "127.0.0.1:31009",
+		JsonApiListenAddr:       apiAddr,
 		RootPath:                rootPath,
 	})
 	if err != nil {
@@ -124,7 +127,7 @@ func LoginAccount(mnemonic, rootPath string) error {
 	return nil
 }
 
-func Login(mnemonic, rootPath string) error {
+func Login(mnemonic, rootPath, apiAddr string) error {
 	usedStoredMnemonic := false
 	if mnemonic == "" {
 		storedMnemonic, err := GetStoredMnemonic()
@@ -144,7 +147,7 @@ func Login(mnemonic, rootPath string) error {
 		return fmt.Errorf("mnemonic must be 12 words")
 	}
 
-	err := LoginAccount(mnemonic, rootPath)
+	err := LoginAccount(mnemonic, rootPath, apiAddr)
 	if err != nil {
 		return fmt.Errorf("failed to log in: %w", err)
 	}
