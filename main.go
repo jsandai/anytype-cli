@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
-	defer internal.CloseGRPCConnection()
+	defer func() {
+		internal.CloseEventReceiver()
+		internal.CloseGRPCConnection()
+	}()
 	cmd.Execute()
 }

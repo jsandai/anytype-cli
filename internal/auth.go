@@ -212,5 +212,8 @@ func Logout() error {
 		return fmt.Errorf("failed to delete stored token: %w", err)
 	}
 
+	// Close the event receiver if it exists
+	CloseEventReceiver()
+
 	return nil
 }

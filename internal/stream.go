@@ -160,3 +160,10 @@ func (er *EventReceiver) Close() {
 		_ = er.queue.Close()
 	})
 }
+
+// CloseEventReceiver closes the global event receiver instance if it exists
+func CloseEventReceiver() {
+	if eventReceiverInstance != nil {
+		eventReceiverInstance.Close()
+	}
+}
