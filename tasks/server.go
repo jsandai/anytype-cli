@@ -6,18 +6,20 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 // ServerTask is a background task that starts the server process.
 // It spawns the server and waits until the given context is canceled.
 func ServerTask(ctx context.Context) error {
-	grpcPort := "31007"
-	grpcWebPort := "31008"
+	grpcPort := config.GRPCPort
+	grpcWebPort := config.GRPCWebPort
 
 	cmd := exec.Command("./dist/grpc-server")
 	cmd.Env = append(os.Environ(),
-		"ANYTYPE_GRPC_ADDR=127.0.0.1:"+grpcPort,
-		"ANYTYPE_GRPCWEB_ADDR=127.0.0.1:"+grpcWebPort,
+		config.EnvGRPCAddr+"="+config.DefaultBindAddress+":"+grpcPort,
+		config.EnvGRPCWebAddr+"="+config.DefaultBindAddress+":"+grpcWebPort,
 	)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 

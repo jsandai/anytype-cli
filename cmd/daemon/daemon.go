@@ -6,10 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/daemon"
-)
-
-const (
-	defaultDaemonAddr = "127.0.0.1:31010"
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 func NewDaemonCmd() *cobra.Command {
@@ -29,6 +26,6 @@ func NewDaemonCmd() *cobra.Command {
 		},
 	}
 
-	daemonCmd.Flags().StringVar(&addr, "addr", defaultDaemonAddr, "Address for the daemon to listen on")
+	daemonCmd.Flags().StringVar(&addr, "addr", config.DefaultDaemonAddress, "Address for the daemon to listen on")
 	return daemonCmd
 }

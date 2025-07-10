@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/anyproto/anytype-cli/internal"
+	"github.com/anyproto/anytype-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -61,7 +62,7 @@ func NewCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&name, "name", "", "Account name (required)")
 	_ = cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVar(&rootPath, "root-path", "", "Custom root path for storing account data")
-	cmd.Flags().StringVar(&apiAddr, "api-addr", "", "Custom API address (default: 127.0.0.1:31009)")
+	cmd.Flags().StringVar(&apiAddr, "api-addr", "", fmt.Sprintf("Custom API address (default: %s)", config.DefaultAPIAddress))
 
 	return cmd
 }

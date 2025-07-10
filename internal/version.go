@@ -3,6 +3,8 @@ package internal
 import (
 	"fmt"
 	"runtime"
+
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 // Set via ldflags during build
@@ -31,7 +33,7 @@ func GetVersion() string {
 
 func GetReleaseURL() string {
 	if GitState == "dirty" || Version == "v0.0.0" || Version == "dev" {
-		return "https://github.com/anyproto/anytype-cli/commit/" + Commit
+		return config.GitHubCommitURL + Commit
 	}
-	return "https://github.com/anyproto/anytype-cli/releases/tag/" + Version
+	return config.GitHubReleaseURL + Version
 }

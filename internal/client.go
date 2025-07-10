@@ -14,6 +14,8 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 const defaultTimeout = 5 * time.Second
@@ -29,7 +31,7 @@ var (
 func GetGRPCClient() (service.ClientCommandsClient, error) {
 	once.Do(func() {
 		var err error
-		grpcConn, err = grpc.NewClient("dns:///127.0.0.1:31007", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcConn, err = grpc.NewClient(config.GRPCDNSAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			initErr = fmt.Errorf("failed to connect to gRPC server: %w", err)
 			return

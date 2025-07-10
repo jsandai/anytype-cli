@@ -7,6 +7,7 @@ import (
 
 	"github.com/anyproto/anytype-cli/daemon"
 	"github.com/anyproto/anytype-cli/internal"
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 func NewLoginCmd() *cobra.Command {
@@ -34,7 +35,7 @@ func NewLoginCmd() *cobra.Command {
 
 	loginCmd.Flags().String("mnemonic", "", "Provide mnemonic (12 words) for authentication")
 	loginCmd.Flags().String("path", "", "Provide custom root path for wallet recovery")
-	loginCmd.Flags().String("api-addr", "", "API listen address (default: 127.0.0.1:31009)")
+	loginCmd.Flags().String("api-addr", "", fmt.Sprintf("API listen address (default: %s)", config.DefaultAPIAddress))
 
 	return loginCmd
 }

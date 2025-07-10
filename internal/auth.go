@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 // getDefaultDataPath returns the default data path for Anytype based on the operating system
@@ -45,7 +47,7 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 		rootPath = getDefaultDataPath()
 	}
 	if apiAddr == "" {
-		apiAddr = "127.0.0.1:31009"
+		apiAddr = config.DefaultAPIAddress
 	}
 
 	var sessionToken string
@@ -221,7 +223,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		rootPath = getDefaultDataPath()
 	}
 	if apiAddr == "" {
-		apiAddr = "127.0.0.1:31009"
+		apiAddr = config.DefaultAPIAddress
 	}
 
 	var mnemonic string

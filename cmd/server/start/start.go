@@ -8,6 +8,7 @@ import (
 
 	"github.com/anyproto/anytype-cli/daemon"
 	"github.com/anyproto/anytype-cli/internal"
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 func NewStartCmd() *cobra.Command {
@@ -41,7 +42,7 @@ func NewStartCmd() *cobra.Command {
 	}
 
 	startCmd.Flags().String("path", "", "Custom root path for wallet recovery")
-	startCmd.Flags().String("api-addr", "", "API listen address (default: 127.0.0.1:31009)")
+	startCmd.Flags().String("api-addr", "", fmt.Sprintf("API listen address (default: %s)", config.DefaultAPIAddress))
 
 	return startCmd
 }

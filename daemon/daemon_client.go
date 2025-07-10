@@ -7,11 +7,12 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/anyproto/anytype-cli/internal/config"
 )
 
 const (
-	defaultDaemonAddr = "http://127.0.0.1:31010"
-	defaultTimeout    = 5 * time.Second
+	defaultTimeout = 5 * time.Second
 )
 
 // SendTaskStart sends a start request for a given task.
@@ -23,7 +24,7 @@ func SendTaskStart(task string, params map[string]string) (*TaskResponse, error)
 	}
 
 	client := &http.Client{Timeout: defaultTimeout}
-	resp, err := client.Post(defaultDaemonAddr+"/task/start", "application/json", bytes.NewReader(b))
+	resp, err := client.Post(config.DaemonHTTPURL+"/task/start", "application/json", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func SendTaskStop(task string, params map[string]string) (*TaskResponse, error) 
 	}
 
 	client := &http.Client{Timeout: defaultTimeout}
-	resp, err := client.Post(defaultDaemonAddr+"/task/stop", "application/json", bytes.NewReader(b))
+	resp, err := client.Post(config.DaemonHTTPURL+"/task/stop", "application/json", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func SendTaskStop(task string, params map[string]string) (*TaskResponse, error) 
 // SendTaskStatus sends a status request for a given task.
 func SendTaskStatus(task string) (*TaskResponse, error) {
 	client := &http.Client{Timeout: defaultTimeout}
-	resp, err := client.Get(defaultDaemonAddr + "/task/status?task=" + task)
+	resp, err := client.Get(config.DaemonHTTPURL + "/task/status?task=" + task)
 	if err != nil {
 		return nil, err
 	}
