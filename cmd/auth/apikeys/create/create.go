@@ -9,27 +9,27 @@ import (
 )
 
 func NewCreateCmd() *cobra.Command {
-	var name string
-	var expiresIn string
-
 	cmd := &cobra.Command{
-		Use:   "create",
+		Use:   "create [name]",
 		Short: "Create a new API key",
 		Long:  "Create a new API key for programmatic access to Anytype",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Using the existing token creation logic temporarily
-			if err := internal.CreateToken(); err != nil {
+			name := args[0]
+
+			resp, err := internal.CreateAPIKey(name)
+			if err != nil {
 				return fmt.Errorf("✗ Failed to create API key: %w", err)
 			}
 
-			fmt.Println("✓ API key created successfully.")
+			fmt.Println("✓ API key created successfully")
+			fmt.Println("ℹ Name:", name)
+			fmt.Println("ℹ Key:", resp.AppKey)
+			fmt.Println("\nKeep this key secure. You won't be able to see it again.")
+
 			return nil
 		},
 	}
-
-	cmd.Flags().StringVarP(&name, "name", "n", "", "Name for the API key")
-	cmd.Flags().StringVarP(&expiresIn, "expires", "e", "", "Expiration duration (e.g., 30d, 1y)")
-	cmd.Flags().String("mnemonic", "", "Provide mnemonic (12 words) for authentication")
 
 	return cmd
 }

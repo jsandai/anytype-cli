@@ -4,22 +4,25 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/anyproto/anytype-cli/internal"
 )
 
 func NewRevokeCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "revoke <key-id>",
+		Use:   "revoke <id>",
 		Short: "Revoke an API key",
 		Long:  "Revoke an API key by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			keyID := args[0]
-			// TODO: Implement API key revocation
-			// 1. Ensure user is authenticated
-			// 2. Revoke key on server
-			// 3. Confirm revocation
-			_ = keyID
-			return fmt.Errorf("API key revocation not yet implemented")
+			appId := args[0]
+
+			err := internal.RevokeAPIKey(appId)
+			if err != nil {
+				return fmt.Errorf("✗ Failed to revoke API key: %w", err)
+			}
+
+			return nil
 		},
 	}
 
