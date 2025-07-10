@@ -23,7 +23,14 @@ func NewStartCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to start server: %w", err)
 			}
-			fmt.Println("✓ Server started successfully via daemon. Response:", resp.Status)
+
+			// Determine the actual API address
+			displayAddr := apiAddr
+			if displayAddr == "" {
+				displayAddr = config.DefaultAPIAddress
+			}
+
+			fmt.Printf("✓ Server started successfully via daemon. Response: %s, API Address: %s\n", resp.Status, displayAddr)
 			time.Sleep(2 * time.Second) // wait for server to start
 
 			mnemonic, err := internal.GetStoredMnemonic()

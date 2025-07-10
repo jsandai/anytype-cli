@@ -228,6 +228,6 @@ func StartManager(addr string) error {
 	}
 
 	<-done
-	fmt.Println("Daemon exiting")
+	fmt.Println("Daemon shutdown complete.")
 	return nil
 }
