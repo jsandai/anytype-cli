@@ -197,5 +197,9 @@ func Logout() error {
 		return fmt.Errorf("failed to delete stored mnemonic: %w", err)
 	}
 
+	if err := DeleteStoredToken(); err != nil {
+		return fmt.Errorf("failed to delete stored token: %w", err)
+	}
+
 	return nil
 }
