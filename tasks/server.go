@@ -15,7 +15,7 @@ func ServerTask(ctx context.Context) error {
 	grpcPort := config.GRPCPort
 	grpcWebPort := config.GRPCWebPort
 
-	cmd := exec.Command("./dist/grpc-server")
+	cmd := exec.Command("anytype-grpc-server")
 	cmd.Env = append(os.Environ(),
 		config.EnvGRPCAddr+"="+config.DefaultBindAddress+":"+grpcPort,
 		config.EnvGRPCWebAddr+"="+config.DefaultBindAddress+":"+grpcWebPort,
