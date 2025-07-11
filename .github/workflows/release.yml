@@ -54,6 +54,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Set build variables
+        id: buildvars
+        run: |
+          echo "time=$(date -u '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "commit=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
       - name: Build binary
         env:
           VERSION: ${{ github.ref_name }}
@@ -61,10 +67,9 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           OUTPUT: anytype-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-        run: |
-          export COMMIT=$(echo "${{ github.sha }}" | cut -c1-7)
-          export BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S')
-          make build
+          COMMIT: ${{ steps.buildvars.outputs.commit }}
+          BUILD_TIME: ${{ steps.buildvars.outputs.time }}
+        run: make build
 
       - name: Compress binary
         run: |
