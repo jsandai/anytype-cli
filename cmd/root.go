@@ -11,6 +11,7 @@ import (
 	"github.com/anyproto/anytype-cli/cmd/server"
 	"github.com/anyproto/anytype-cli/cmd/shell"
 	"github.com/anyproto/anytype-cli/cmd/space"
+	"github.com/anyproto/anytype-cli/cmd/update"
 	"github.com/anyproto/anytype-cli/cmd/version"
 	"github.com/anyproto/anytype-cli/core"
 )
@@ -46,6 +47,7 @@ func init() {
 		shell.NewShellCmd(rootCmd),
 		space.NewSpaceCmd(),
 		daemon.NewDaemonCmd(),
+		update.NewUpdateCmd(),
 		version.NewVersionCmd(),
 	)
 }
