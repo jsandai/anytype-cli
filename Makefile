@@ -4,8 +4,8 @@ all: build
 
 GOLANGCI_LINT_VERSION := v2.2.1
 
-VERSION ?= $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
-COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+VERSION ?= $(shell git describe --tags 2>/dev/null)
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_TIME ?= $(shell date -u '+%Y-%m-%d %H:%M:%S')
 GIT_STATE ?= $(shell git diff --quiet 2>/dev/null && echo "clean" || echo "dirty")
 LDFLAGS := -X 'github.com/anyproto/anytype-cli/core.Version=$(VERSION)' \

@@ -3,21 +3,30 @@ package core
 import (
 	"fmt"
 	"runtime"
+	"strings"
 
 	"github.com/anyproto/anytype-cli/core/config"
 )
 
 // Set via ldflags during build
 var (
-	Version   = "dev"
-	Commit    = "unknown"
-	BuildTime = "unknown"
-	GitState  = "unknown"
+	Version   = ""
+	Commit    = ""
+	BuildTime = ""
+	GitState  = ""
 )
 
 func GetVersionVerbose() string {
+	commit := Commit
+	if commit == "" {
+		commit = "unknown"
+	}
+	buildTime := BuildTime
+	if buildTime == "" {
+		buildTime = "unknown"
+	}
 	return fmt.Sprintf("Anytype CLI %s\nCommit: %s\nBuilt: %s\nGo: %s\nOS/Arch: %s/%s\nURL: %s",
-		GetVersion(), Commit, BuildTime, runtime.Version(), runtime.GOOS, runtime.GOARCH, GetReleaseURL())
+		GetVersion(), commit, buildTime, runtime.Version(), runtime.GOOS, runtime.GOARCH, GetReleaseURL())
 }
 
 func GetVersionBrief() string {
@@ -25,15 +34,22 @@ func GetVersionBrief() string {
 }
 
 func GetVersion() string {
-	if GitState == "dirty" {
-		return Version + "-dirty"
+	version := Version
+	if version == "" {
+		version = "dev"
 	}
-	return Version
+	if GitState == "dirty" {
+		version += "-dirty"
+	}
+	return version
 }
 
 func GetReleaseURL() string {
-	if GitState == "dirty" || Version == "v0.0.0" || Version == "dev" {
-		return config.GitHubCommitURL + Commit
+	if Version == "" || Commit == "" || strings.Contains(Version, "-") {
+		if Commit != "" {
+			return config.GitHubCommitURL + Commit
+		}
+		return "https://github.com/anyproto/anytype-cli"
 	}
 	return config.GitHubReleaseURL + Version
 }
