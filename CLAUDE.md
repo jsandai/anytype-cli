@@ -9,28 +9,30 @@ This is the Anytype CLI, a Go-based command-line interface for interacting with 
 ## Build Commands
 
 ```bash
-# Download the middleware server (required before first use)
-make download-server
-
-# Build the CLI
+# Build the CLI (automatically downloads middleware server if needed)
 make build
 
 # Install system-wide
 make install
 
-# Install user-local
+# Install user-local (~/.local/bin)
 make install-local
 
-# Manual build
-go build -o dist/anytype
+# Manual download of middleware server
+make download-server
+
+# Run linting
+make lint
+
+# Manual build with version info
+go build -ldflags "-X main.Version=$(git describe --tags --always) -X main.Commit=$(git rev-parse HEAD) -X main.BuildTime=$(date -u +%Y%m%d-%H%M%S)" -o dist/anytype
 ```
 
 ## Development Workflow
 
 1. **Initial Setup**:
    ```bash
-   make download-server  # Downloads anytype-heart middleware
-   make build           # Builds the CLI
+   make build  # Builds CLI and downloads anytype-heart middleware if needed
    ```
 
 2. **Running the Application**:
@@ -42,25 +44,36 @@ go build -o dist/anytype
    ./dist/anytype server start
    ```
 
-3. **Code Formatting**:
+3. **Code Formatting and Linting**:
    ```bash
    go fmt ./...
    go vet ./...
+   make lint  # Uses golangci-lint
    ```
 
 ## Architecture Overview
 
 ### Command Structure (`/cmd/`)
 - Uses Cobra framework for CLI commands
-- Each command group has its own directory (auth/, daemon/, server/, space/, token/, shell/)
+- Each command group has its own directory:
+  - `auth/`: Authentication commands (login, logout, status)
+    - `apikey/`: API key management (create, list, revoke)
+  - `daemon/`: Daemon management
+  - `server/`: Server lifecycle commands
+  - `space/`: Space management operations
+  - `shell/`: Interactive shell mode
+  - `update/`: Self-update functionality
+  - `version/`: Version information
 - `root.go` registers all commands
 
-### Core Logic (`/internal/`)
+### Core Logic (`/core/`)
 - `client.go`: gRPC client singleton for server communication
 - `auth.go`: Authentication logic with keyring integration
 - `space.go`: Space management operations
 - `stream.go`: Event streaming functionality with EventReceiver
-- `token.go`: Token management
+- `keyring.go`: Secure credential storage (tokens and API keys)
+- `apikey.go`: API key generation and management
+- `config/constants.go`: Centralized configuration constants
 
 ### Daemon (`/daemon/`)
 - `daemon.go`: Main daemon process that manages server lifecycle
@@ -74,18 +87,21 @@ go build -o dist/anytype
 
 ## Key Dependencies
 
-- `github.com/anyproto/anytype-heart v0.39.5`: The middleware server
+- `github.com/anyproto/anytype-heart v0.41.2`: The middleware server
 - `github.com/spf13/cobra v1.8.1`: CLI framework
-- `google.golang.org/grpc v1.70.0`: gRPC communication
-- `github.com/99designs/go-keyring v0.2.6`: Secure credential storage
+- `google.golang.org/grpc v1.73.0`: gRPC communication
+- `github.com/zalando/go-keyring`: Secure credential storage
+- `github.com/cheggaaa/mb/v3 v3.2.0`: Message batching queue for event handling
 
 ## Important Notes
 
 1. **Two-Process Architecture**: The CLI requires both a daemon process and the middleware server to be running
-2. **Keyring Integration**: Credentials are stored securely in the system keyring
+2. **Keyring Integration**: Authentication tokens are stored securely in the system keyring
 3. **gRPC Communication**: All server interaction happens via gRPC on localhost:31007
 4. **Event Streaming**: Uses server-sent events for real-time updates in auto-approval
-5. **No Tests**: The project currently has no test files
+5. **Version Management**: Version info is injected at build time via ldflags
+6. **Self-Updating**: The CLI can update itself using the `anytype update` command
+7. **API Keys**: Support for generating API keys for programmatic access
 
 ## Common Development Tasks
 
@@ -93,7 +109,7 @@ go build -o dist/anytype
 1. Create a new directory under `/cmd/` for your command group
 2. Create a `cmd.go` file with the Cobra command definition
 3. Register the command in `/cmd/root.go`
-4. Implement core logic in `/internal/` if needed
+4. Implement core logic in `/core/` if needed
 
 ### Working with the Daemon
 - Daemon tasks go in `/tasks/`
@@ -101,6 +117,11 @@ go build -o dist/anytype
 - Use the `Task` interface for new task implementations
 
 ### Error Handling
-- Client connection errors are handled in `internal/client.go`
+- Client connection errors are handled in `core/client.go`
 - Server startup errors are managed in `daemon/daemon.go:connectToServer`
 - Use standard Go error wrapping with context
+
+### API Key Management
+- API keys are created and managed by the server via gRPC APIs
+- The CLI provides commands to create, list, and revoke API keys
+- Keys are generated server-side and can be used for programmatic access
