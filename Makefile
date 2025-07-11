@@ -22,6 +22,10 @@ download-server:
 	@./setup.sh
 
 build:
+	@if [ ! -f dist/anytype-grpc-server ]; then \
+		echo "Server binary not found, downloading..."; \
+		$(MAKE) download-server; \
+	fi
 	@echo "Building Anytype CLI..."
 	@CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "$(LDFLAGS)" -o $(OUTPUT)
 	@echo "Built successfully: $(OUTPUT)"
@@ -29,7 +33,7 @@ build:
 install: build
 	@echo "Installing Anytype CLI..."
 	@cp dist/anytype /usr/local/bin/anytype 2>/dev/null || sudo cp dist/anytype /usr/local/bin/anytype
-	@cp dist/grpc-server /usr/local/bin/anytype-grpc-server 2>/dev/null || sudo cp dist/grpc-server /usr/local/bin/anytype-grpc-server
+	@cp dist/anytype-grpc-server /usr/local/bin/anytype-grpc-server 2>/dev/null || sudo cp dist/anytype-grpc-server /usr/local/bin/anytype-grpc-server
 	@echo "Installed to /usr/local/bin/"
 
 uninstall:
@@ -41,7 +45,7 @@ uninstall:
 install-local: build
 	@mkdir -p $$HOME/.local/bin
 	@cp dist/anytype $$HOME/.local/bin/anytype
-	@cp dist/grpc-server $$HOME/.local/bin/anytype-grpc-server
+	@cp dist/anytype-grpc-server $$HOME/.local/bin/anytype-grpc-server
 	@echo "Installed to $$HOME/.local/bin/"
 	@echo "Make sure $$HOME/.local/bin is in your PATH"
 

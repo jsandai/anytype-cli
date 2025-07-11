@@ -18,7 +18,6 @@ select_option() {
     echo ""
     
     while true; do
-        # Draw menu
         for i in "${!options[@]}"; do
             if [ "$i" -eq $selected ]; then
                 echo "  ▶ ${options[$i]}"
@@ -38,12 +37,10 @@ select_option() {
         elif [[ $key == "" ]]; then
             break
         fi
-        
-        # Move cursor back up to redraw menu
+
         tput cuu ${#options[@]}
     done
-    
-    # Clear menu lines
+
     for ((i=0; i<${#options[@]}; i++)); do
         tput el
         [ $i -lt $((${#options[@]} - 1)) ] && tput cud1
@@ -155,10 +152,10 @@ cd ..
 
 echo "Downloaded and extracted successfully!"
 
-# Make the server executable
 if [[ -f "dist/grpc-server" ]]; then
     chmod +x dist/grpc-server
-    SERVER_NAME="grpc-server"
+    mv dist/grpc-server dist/anytype-grpc-server
+    SERVER_NAME="anytype-grpc-server"
 else
     echo "✗ Could not find server executable (grpc-server or mw)"
     SERVER_NAME="unknown"
@@ -168,7 +165,6 @@ echo ""
 echo "Anytype middleware server downloaded to: dist/$SERVER_NAME"
 echo ""
 echo "To use the Anytype CLI:"
-echo "1. Build the CLI: make build"
-echo "2. Install the CLI: make install (or make install-local)"
-echo "3. Start the daemon: anytype daemon"
-echo "4. Start the server: anytype server start"
+echo "1. Build and install the CLI: make install (or make install-local)"
+echo "2. Start the daemon: anytype daemon"
+echo "3. Start the server: anytype server start"

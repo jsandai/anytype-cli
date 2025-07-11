@@ -5,10 +5,7 @@ A command-line interface for interacting with [Anytype](https://github.com/anypr
 ## Quick Start
 
 ```bash
-# Download middleware server
-make download-server
-
-# Build and install CLI
+# Build and install CLI (downloads server automatically)
 make install
 
 # Start the daemon
@@ -28,13 +25,13 @@ anytype server start
 
 ### Download Middleware Server
 
-The Anytype CLI requires the [Anytype middleware server](https://github.com/anyproto/anytype-heart) to function:
+The Anytype CLI requires the [Anytype middleware server](https://github.com/anyproto/anytype-heart) to function. The server is automatically downloaded during the build process if not already present.
+
+To manually download the server:
 
 ```bash
 make download-server
 ```
-
-This downloads the latest binary for your platform to the `dist/` directory.
 
 ### Build and Install
 
