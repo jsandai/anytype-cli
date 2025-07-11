@@ -9,7 +9,10 @@ This is the Anytype CLI, a Go-based command-line interface for interacting with 
 ## Build Commands
 
 ```bash
-# Build the CLI (automatically downloads middleware server if needed)
+# Download the middleware server (required before first use)
+make download-server
+
+# Build the CLI
 make build
 
 # Install system-wide
@@ -32,7 +35,8 @@ go build -ldflags "-X main.Version=$(git describe --tags --always) -X main.Commi
 
 1. **Initial Setup**:
    ```bash
-   make build  # Builds CLI and downloads anytype-heart middleware if needed
+   make download-server  # Download anytype-heart middleware
+   make build           # Build the CLI
    ```
 
 2. **Running the Application**:

@@ -18,14 +18,10 @@ GOARCH ?= $(shell go env GOARCH)
 OUTPUT ?= dist/anytype
 
 download-server:
-	@echo "Downloading Anytype Middleware Server..."
-	@./setup.sh
+	@echo "Downloading Anytype Middleware Server for $(GOOS)/$(GOARCH)..."
+	@./setup.sh $(GOOS) $(GOARCH)
 
 build:
-	@if [ ! -f dist/anytype-grpc-server ]; then \
-		echo "Server binary not found, downloading..."; \
-		$(MAKE) download-server; \
-	fi
 	@echo "Building Anytype CLI..."
 	@CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "$(LDFLAGS)" -o $(OUTPUT)
 	@echo "Built successfully: $(OUTPUT)"
