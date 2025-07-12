@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/cmd/auth"
+	"github.com/anyproto/anytype-cli/cmd/config"
 	"github.com/anyproto/anytype-cli/cmd/daemon"
 	"github.com/anyproto/anytype-cli/cmd/server"
 	"github.com/anyproto/anytype-cli/cmd/shell"
@@ -43,6 +44,7 @@ func init() {
 
 	rootCmd.AddCommand(
 		auth.NewAuthCmd(),
+		config.NewConfigCmd(),
 		daemon.NewDaemonCmd(),
 		server.NewServerCmd(),
 		shell.NewShellCmd(rootCmd),

@@ -1,0 +1,23 @@
+package config
+
+import (
+	"github.com/spf13/cobra"
+
+	configGetCmd "github.com/anyproto/anytype-cli/cmd/config/get"
+	configResetCmd "github.com/anyproto/anytype-cli/cmd/config/reset"
+	configSetCmd "github.com/anyproto/anytype-cli/cmd/config/set"
+)
+
+func NewConfigCmd() *cobra.Command {
+	configCmd := &cobra.Command{
+		Use:   "config <command>",
+		Short: "Manage configuration",
+		Long:  `Manage Anytype CLI configuration settings`,
+	}
+
+	configCmd.AddCommand(configGetCmd.NewGetCmd())
+	configCmd.AddCommand(configSetCmd.NewSetCmd())
+	configCmd.AddCommand(configResetCmd.NewResetCmd())
+
+	return configCmd
+}
