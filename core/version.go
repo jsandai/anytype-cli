@@ -30,7 +30,7 @@ func GetVersionVerbose() string {
 }
 
 func GetVersionBrief() string {
-	return fmt.Sprintf("anytype-cli version %s (%s)\n%s", GetVersion(), BuildTime, GetReleaseURL())
+	return fmt.Sprintf("anytype-cli %s (%s)\n%s", GetVersion(), BuildTime, GetReleaseURL())
 }
 
 func GetVersion() string {

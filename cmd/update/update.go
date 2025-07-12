@@ -40,7 +40,13 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	current := core.GetVersion()
-	if current == latest {
+
+	currentBase := current
+	if idx := strings.Index(current, "-"); idx != -1 {
+		currentBase = current[:idx]
+	}
+
+	if currentBase >= latest {
 		fmt.Printf("Already up to date (%s)\n", current)
 		return nil
 	}
