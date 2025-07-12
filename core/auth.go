@@ -113,8 +113,9 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	}
 	fmt.Println("ℹ Account ID:", accountID)
 
+	var techSpaceID string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
-		_, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
+		resp, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
 			Id:                accountID,
 			JsonApiListenAddr: apiAddr,
 			RootPath:          rootPath,
@@ -122,10 +123,29 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 		if err != nil {
 			return fmt.Errorf("failed to select account: %w", err)
 		}
+		if resp.Account != nil && resp.Account.Info != nil {
+			techSpaceID = resp.Account.Info.TechSpaceId
+		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
-	return err
+	configMgr := config.GetConfigManager()
+	if err := configMgr.Load(); err != nil {
+		fmt.Println("Warning: failed to load config:", err)
+	}
+	if err := configMgr.SetAccountID(accountID); err != nil {
+		fmt.Println("Warning: failed to save account ID:", err)
+	}
+	if techSpaceID != "" {
+		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
+			fmt.Println("Warning: failed to save tech space ID:", err)
+		}
+	}
+
+	return nil
 }
 
 func Login(mnemonic, rootPath, apiAddr string) error {
@@ -203,6 +223,11 @@ func Logout() error {
 
 	if err := DeleteStoredToken(); err != nil {
 		return fmt.Errorf("failed to delete stored token: %w", err)
+	}
+
+	configMgr := config.GetConfigManager()
+	if err := configMgr.Delete(); err != nil {
+		fmt.Println("Warning: failed to clear config:", err)
 	}
 
 	CloseEventReceiver()
@@ -283,14 +308,18 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		return "", "", err
 	}
 
+	var techSpaceID string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
-		_, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
+		resp, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
 			Id:                accountID,
 			JsonApiListenAddr: apiAddr,
 			RootPath:          rootPath,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to select account: %w", err)
+		}
+		if resp.Account != nil && resp.Account.Info != nil {
+			techSpaceID = resp.Account.Info.TechSpaceId
 		}
 		return nil
 	})
@@ -299,6 +328,19 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 	}
 
 	_ = SaveMnemonic(mnemonic)
+
+	configMgr := config.GetConfigManager()
+	if err := configMgr.Load(); err != nil {
+		fmt.Println("Warning: failed to load config:", err)
+	}
+	if err := configMgr.SetAccountID(accountID); err != nil {
+		fmt.Println("Warning: failed to save account ID:", err)
+	}
+	if techSpaceID != "" {
+		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
+			fmt.Println("Warning: failed to save tech space ID:", err)
+		}
+	}
 
 	return mnemonic, accountID, nil
 }
