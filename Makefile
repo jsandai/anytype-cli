@@ -8,7 +8,8 @@ VERSION ?= $(shell git describe --tags 2>/dev/null)
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_TIME ?= $(shell date -u '+%Y-%m-%d %H:%M:%S')
 GIT_STATE ?= $(shell git diff --quiet 2>/dev/null && echo "clean" || echo "dirty")
-LDFLAGS := -X 'github.com/anyproto/anytype-cli/core.Version=$(VERSION)' \
+LDFLAGS := -s -w \
+           -X 'github.com/anyproto/anytype-cli/core.Version=$(VERSION)' \
            -X 'github.com/anyproto/anytype-cli/core.Commit=$(COMMIT)' \
            -X 'github.com/anyproto/anytype-cli/core.BuildTime=$(BUILD_TIME)' \
            -X 'github.com/anyproto/anytype-cli/core.GitState=$(GIT_STATE)'
