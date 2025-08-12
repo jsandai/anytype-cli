@@ -3,13 +3,13 @@ package core
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
-	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
 
 	"google.golang.org/grpc"
@@ -52,23 +52,6 @@ func CloseGRPCConnection() {
 	}
 }
 
-// IsGRPCServerRunning checks if the gRPC server is reachable
-func IsGRPCServerRunning() (bool, error) {
-	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
-		_, err := client.AppGetVersion(ctx, &pb.RpcAppGetVersionRequest{})
-		return err
-	})
-
-	if err != nil {
-		if strings.Contains(err.Error(), "connection refused") {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return true, nil
-}
-
 func ClientContextWithAuth(token string) context.Context {
 	return metadata.NewOutgoingContext(context.Background(), metadata.Pairs("token", token))
 }
@@ -95,7 +78,14 @@ func GRPCCall(fn func(ctx context.Context, client service.ClientCommandsClient) 
 	ctx, cancel := ClientContextWithAuthTimeout(token, defaultTimeout)
 	defer cancel()
 
-	return fn(ctx, client)
+	err = fn(ctx, client)
+	if err != nil {
+		if s, ok := status.FromError(err); ok && s.Code() == codes.Unavailable {
+			return fmt.Errorf("server is not running. Start it with: anytype serve")
+		}
+		return err
+	}
+	return nil
 }
 
 // GRPCCallNoAuth is like GRPCCall but without authentication
@@ -108,5 +98,12 @@ func GRPCCallNoAuth(fn func(ctx context.Context, client service.ClientCommandsCl
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	return fn(ctx, client)
+	err = fn(ctx, client)
+	if err != nil {
+		if s, ok := status.FromError(err); ok && s.Code() == codes.Unavailable {
+			return fmt.Errorf("server is not running. Start it with: anytype serve")
+		}
+		return err
+	}
+	return nil
 }

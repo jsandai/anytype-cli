@@ -7,7 +7,6 @@ import (
 
 	"github.com/anyproto/anytype-cli/core"
 	"github.com/anyproto/anytype-cli/core/config"
-	"github.com/anyproto/anytype-cli/daemon"
 )
 
 func NewLoginCmd() *cobra.Command {
@@ -18,11 +17,6 @@ func NewLoginCmd() *cobra.Command {
 			mnemonic, _ := cmd.Flags().GetString("mnemonic")
 			rootPath, _ := cmd.Flags().GetString("path")
 			apiAddr, _ := cmd.Flags().GetString("api-addr")
-
-			statusResp, err := daemon.SendTaskStatus("server")
-			if err != nil || statusResp.Status != "running" {
-				return fmt.Errorf("server is not running")
-			}
 
 			if err := core.Login(mnemonic, rootPath, apiAddr); err != nil {
 				return fmt.Errorf("✗ Failed to log in: %w", err)

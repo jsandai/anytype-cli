@@ -8,16 +8,13 @@ const (
 	GRPCPort    = "31007"
 	GRPCWebPort = "31008"
 	APIPort     = "31009"
-	DaemonPort  = "31010"
 
 	// Full addresses
 	DefaultGRPCAddress    = DefaultBindAddress + ":" + GRPCPort
 	DefaultGRPCWebAddress = DefaultBindAddress + ":" + GRPCWebPort
 	DefaultAPIAddress     = DefaultBindAddress + ":" + APIPort
-	DefaultDaemonAddress  = DefaultBindAddress + ":" + DaemonPort
 
 	// URLs
-	DaemonHTTPURL  = "http://" + DefaultDaemonAddress
 	GRPCDNSAddress = "dns:///" + DefaultGRPCAddress
 
 	// External URLs

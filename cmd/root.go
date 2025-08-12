@@ -8,8 +8,8 @@ import (
 
 	"github.com/anyproto/anytype-cli/cmd/auth"
 	"github.com/anyproto/anytype-cli/cmd/config"
-	"github.com/anyproto/anytype-cli/cmd/daemon"
-	"github.com/anyproto/anytype-cli/cmd/server"
+	"github.com/anyproto/anytype-cli/cmd/serve"
+	"github.com/anyproto/anytype-cli/cmd/service"
 	"github.com/anyproto/anytype-cli/cmd/shell"
 	"github.com/anyproto/anytype-cli/cmd/space"
 	"github.com/anyproto/anytype-cli/cmd/update"
@@ -45,8 +45,8 @@ func init() {
 	rootCmd.AddCommand(
 		auth.NewAuthCmd(),
 		config.NewConfigCmd(),
-		daemon.NewDaemonCmd(),
-		server.NewServerCmd(),
+		serve.NewServeCmd(),
+		service.NewServiceCmd(),
 		shell.NewShellCmd(rootCmd),
 		space.NewSpaceCmd(),
 		update.NewUpdateCmd(),
