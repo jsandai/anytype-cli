@@ -4,15 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Anytype CLI, a Go-based command-line interface for interacting with Anytype. It uses a client-server architecture where the CLI communicates with a separate middleware server (anytype-heart) via gRPC.
+This is the Anytype CLI, a Go-based command-line interface for interacting with Anytype. It includes an embedded gRPC server (from anytype-heart) making it a complete, self-contained binary that provides both server and CLI functionality. The CLI embeds the anytype-heart middleware server directly, eliminating the need for separate server installation or daemon processes.
 
 ## Build Commands
 
 ```bash
-# Download the middleware server (required before first use)
-make download-server
-
-# Build the CLI
+# Build the CLI (includes embedded server, downloads tantivy library automatically)
 make build
 
 # Install system-wide
@@ -21,31 +18,34 @@ make install
 # Install user-local (~/.local/bin)
 make install-local
 
-# Manual download of middleware server
-make download-server
+# Clean tantivy libraries
+make clean-tantivy
 
 # Run linting
 make lint
-
-# Manual build with version info
-go build -ldflags "-X main.Version=$(git describe --tags --always) -X main.Commit=$(git rev-parse HEAD) -X main.BuildTime=$(date -u +%Y%m%d-%H%M%S)" -o dist/anytype
 ```
+
+### Build Requirements
+
+- **CGO**: The build requires CGO_ENABLED=1 due to tantivy (full-text search library) dependencies
+- **Tantivy Library**: Automatically downloaded for your platform during `make build`
+- **C++ Compiler**: Required for linking tantivy library (clang on macOS, gcc on Linux)
 
 ## Development Workflow
 
 1. **Initial Setup**:
    ```bash
-   make download-server  # Download anytype-heart middleware
-   make build           # Build the CLI
+   make build  # Build the CLI with embedded server
    ```
 
 2. **Running the Application**:
    ```bash
-   # Start the daemon (required)
-   ./dist/anytype daemon
+   # Run server interactively (for development)
+   ./dist/anytype serve
    
-   # In another terminal, start the server
-   ./dist/anytype server start
+   # Or install as system service
+   ./dist/anytype service install
+   ./dist/anytype service start
    ```
 
 3. **Code Formatting and Linting**:
@@ -62,8 +62,8 @@ go build -ldflags "-X main.Version=$(git describe --tags --always) -X main.Commi
 - Each command group has its own directory:
   - `auth/`: Authentication commands (login, logout, status)
     - `apikey/`: API key management (create, list, revoke)
-  - `daemon/`: Daemon management
-  - `server/`: Server lifecycle commands
+  - `serve/`: Run the embedded Anytype server in foreground
+  - `service/`: System service management (install, uninstall, start, stop, restart, status)
   - `space/`: Space management operations
   - `shell/`: Interactive shell mode
   - `update/`: Self-update functionality
@@ -78,34 +78,28 @@ go build -ldflags "-X main.Version=$(git describe --tags --always) -X main.Commi
 - `keyring.go`: Secure credential storage (tokens and API keys)
 - `apikey.go`: API key generation and management
 - `config/constants.go`: Centralized configuration constants
-
-### Daemon (`/daemon/`)
-- `daemon.go`: Main daemon process that manages server lifecycle
-- `taskmanager.go`: Schedules and manages background tasks
-- `daemon_client.go`: Client for daemon communication
-
-### Tasks (`/tasks/`)
-- Background tasks executed by the daemon
-- `autoapprove.go`: Auto-approves space join requests
-- `server.go`: Manages server startup/shutdown
+- `serviceprogram/`: Service implementation using kardianos/service
+- `grpcserver/`: Embedded gRPC server implementation
 
 ## Key Dependencies
 
-- `github.com/anyproto/anytype-heart v0.41.2`: The middleware server
+- `github.com/anyproto/anytype-heart v0.42.0`: The middleware server (embedded)
 - `github.com/spf13/cobra v1.8.1`: CLI framework
 - `google.golang.org/grpc v1.73.0`: gRPC communication
 - `github.com/zalando/go-keyring`: Secure credential storage
 - `github.com/cheggaaa/mb/v3 v3.2.0`: Message batching queue for event handling
+- `github.com/kardianos/service v1.2.4`: Cross-platform system service management
 
 ## Important Notes
 
-1. **Two-Process Architecture**: The CLI requires both a daemon process and the middleware server to be running
-2. **Keyring Integration**: Authentication tokens are stored securely in the system keyring
-3. **gRPC Communication**: All server interaction happens via gRPC on localhost:31007
-4. **Event Streaming**: Uses server-sent events for real-time updates in auto-approval
-5. **Version Management**: Version info is injected at build time via ldflags
-6. **Self-Updating**: The CLI can update itself using the `anytype update` command
-7. **API Keys**: Support for generating API keys for programmatic access
+1. **Service Architecture**: The CLI includes an embedded gRPC server that runs as a system service or interactively
+2. **Cross-Platform Service**: Works on Windows (Service), macOS (launchd), Linux (systemd/upstart/sysv)
+3. **Keyring Integration**: Authentication tokens are stored securely in the system keyring
+4. **gRPC Communication**: All server interaction happens via gRPC on localhost:31007
+5. **Event Streaming**: Uses server-sent events for real-time updates
+6. **Version Management**: Version info is injected at build time via ldflags
+7. **Self-Updating**: The CLI can update itself using the `anytype update` command
+8. **API Keys**: Support for generating API keys for programmatic access
 
 ## Common Development Tasks
 
@@ -157,14 +151,14 @@ func NewConfigCmd() *cobra.Command {
 }
 ```
 
-### Working with the Daemon
-- Daemon tasks go in `/tasks/`
-- Register new tasks in `daemon/taskmanager.go`
-- Use the `Task` interface for new task implementations
+### Working with the Service
+- Service is managed via the `anytype serve` command
+- Service program implementation is in `core/serviceprogram/`
+- Supports both interactive mode and system service installation
 
 ### Error Handling
 - Client connection errors are handled in `core/client.go`
-- Server startup errors are managed in `daemon/daemon.go:connectToServer`
+- Server startup errors are managed in `core/serviceprogram/serviceprogram.go`
 - Use standard Go error wrapping with context
 
 ### API Key Management
