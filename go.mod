@@ -4,7 +4,7 @@ go 1.23.8
 
 require (
 	github.com/anyproto/any-sync v0.28.0
-	github.com/anyproto/anytype-heart v0.42.0
+	github.com/anyproto/anytype-heart v0.42.3
 	github.com/cheggaaa/mb/v3 v3.0.2
 	github.com/chzyer/readline v1.5.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
