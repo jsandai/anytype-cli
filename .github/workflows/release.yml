@@ -49,11 +49,11 @@ jobs:
       - name: Compress binaries
         run: |
           cd dist
-          tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-darwin-amd64.tar.gz" anytype-darwin-amd64
-          tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-darwin-arm64.tar.gz" anytype-darwin-arm64
-          zip "../anytype-cli-${{ steps.buildvars.outputs.version }}-windows-amd64.zip" anytype-windows-amd64.exe
-          tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-linux-amd64.tar.gz" anytype-linux-amd64
-          tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-linux-arm64.tar.gz" anytype-linux-arm64
+          cp anytype-darwin-amd64 anytype && tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-darwin-amd64.tar.gz" anytype && rm anytype
+          cp anytype-darwin-arm64 anytype && tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-darwin-arm64.tar.gz" anytype && rm anytype
+          cp anytype-windows-amd64.exe anytype.exe && zip "../anytype-cli-${{ steps.buildvars.outputs.version }}-windows-amd64.zip" anytype.exe && rm anytype.exe
+          cp anytype-linux-amd64 anytype && tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-linux-amd64.tar.gz" anytype && rm anytype
+          cp anytype-linux-arm64 anytype && tar czf "../anytype-cli-${{ steps.buildvars.outputs.version }}-linux-arm64.tar.gz" anytype && rm anytype
           cd ..
           ls -la anytype-cli-*
 
