@@ -34,10 +34,6 @@ func runServer(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create service: %w", err)
 	}
 
-	// Run will either:
-	// 1. Run as a service if started by service manager
-	// 2. Run in foreground if started interactively
-	// It handles signals appropriately in both cases
 	err = s.Run()
 	if err != nil {
 		return fmt.Errorf("service failed: %w", err)

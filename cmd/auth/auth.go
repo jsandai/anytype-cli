@@ -7,6 +7,7 @@ import (
 	authCreateCmd "github.com/anyproto/anytype-cli/cmd/auth/create"
 	authLoginCmd "github.com/anyproto/anytype-cli/cmd/auth/login"
 	authLogoutCmd "github.com/anyproto/anytype-cli/cmd/auth/logout"
+	authStatusCmd "github.com/anyproto/anytype-cli/cmd/auth/status"
 )
 
 func NewAuthCmd() *cobra.Command {
@@ -17,6 +18,7 @@ func NewAuthCmd() *cobra.Command {
 
 	cmd.AddCommand(authLoginCmd.NewLoginCmd())
 	cmd.AddCommand(authLogoutCmd.NewLogoutCmd())
+	cmd.AddCommand(authStatusCmd.NewStatusCmd())
 	cmd.AddCommand(authCreateCmd.NewCreateCmd())
 	cmd.AddCommand(authApiKeyCmd.NewApiKeyCmd())
 
