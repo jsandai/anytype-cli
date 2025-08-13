@@ -1,21 +1,18 @@
 # Anytype CLI
 
-A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). Built for developers to enable [headless instances](https://github.com/anyproto/anytype-heart) or server-side exposure of the [Anytype API](https://github.com/anyproto/anytype-api).
+A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). This CLI includes an embedded gRPC server from [anytype-heart](https://github.com/anyproto/anytype-heart), making it a complete, self-contained solution for developers to work with Anytype.
 
 ## Quick Start
 
 ```bash
-# Download the middleware server (required before first use)
-make download-server
+# Build the CLI (includes embedded server)
+make build
 
-# Build and install CLI
+# Install the CLI
 make install
 
-# Start the daemon
-anytype daemon
-
-# In another terminal, start the server
-anytype server start
+# Run the Anytype server
+anytype serve
 ```
 
 ## Installation
@@ -25,29 +22,12 @@ anytype server start
 - Go 1.20 or later
 - Git
 - Make
-
-### Download Middleware Server
-
-The Anytype CLI requires the [Anytype middleware server](https://github.com/anyproto/anytype-heart) to function. You must download the server before first use:
-
-```bash
-make download-server
-```
-
-This downloads the appropriate server binary for your platform. You can also specify a different platform:
-
-```bash
-# Download for Linux AMD64
-make download-server GOOS=linux GOARCH=amd64
-
-# Download for macOS ARM64
-make download-server GOOS=darwin GOARCH=arm64
-```
+- C++ compiler (for tantivy library)
 
 ### Build and Install
 
 ```bash
-# Build only
+# Build only (automatically downloads tantivy library)
 make build
 
 # Build and install system-wide (may require sudo)
@@ -67,35 +47,6 @@ make uninstall
 make uninstall-local
 ```
 
-<details>
-<summary>Manual Setup (Advanced)</summary>
-
-If you prefer manual setup or need to build the middleware from source:
-
-#### Expected repository structure:
-
-```
-parent-directory/
-├── anytype-heart/
-└── anytype-cli/
-```
-
-#### Steps:
-
-1. **In `anytype-heart` directory:**
-
-```bash
-make install-dev-cli
-```
-
-2. **In `anytype-cli` directory:**
-
-```bash
-go build -o dist/anytype
-```
-
-</details>
-
 ## Usage
 
 ```
@@ -103,19 +54,120 @@ anytype <command> <subcommand> [flags]
 
 Commands:
   auth        Authenticate with Anytype
-  daemon      Run the Anytype background daemon
-  server      Manage the middleware server
+  serve       Run the Anytype server
+  service     Manage Anytype as a system service
   shell       Start the Anytype interactive shell
   space       Manage spaces
+  update      Update anytype CLI to the latest version
   version     Show version information
 
 Examples:
-  anytype daemon                    # Run daemon in foreground
-  anytype server start              # Start the middleware server
+  anytype serve                     # Run server in foreground
+  anytype service install           # Install as system service
+  anytype service start             # Start the service
   anytype auth login                # Login with mnemonic
-  anytype space autoapprove         # Auto-approve space join requests
+  anytype space list                # List available spaces
 
 Use "anytype <command> --help" for more information about a command.
+```
+
+### Running the Server
+
+The CLI includes an embedded gRPC server that can be run in two ways:
+
+#### 1. Interactive Mode (for development)
+```bash
+anytype serve
+```
+This runs the server in the foreground with logs output to stdout, similar to `ollama serve`.
+
+#### 2. System Service (for production)
+```bash
+# Install as system service
+anytype service install
+
+# Start the service
+anytype service start
+
+# Check service status
+anytype service status
+
+# Stop the service
+anytype service stop
+
+# Uninstall the service
+anytype service uninstall
+```
+
+The service management works across platforms:
+- **macOS**: Uses launchd
+- **Linux**: Uses systemd/upstart/sysv
+- **Windows**: Uses Windows Service
+
+### Authentication
+
+After starting the server, authenticate with your Anytype account:
+
+```bash
+# Login with mnemonic
+anytype auth login
+
+# Check authentication status
+anytype auth status
+
+# Logout
+anytype auth logout
+```
+
+### API Keys
+
+Generate API keys for programmatic access:
+
+```bash
+# Create a new API key
+anytype auth apikey create --name "my-app"
+
+# List API keys
+anytype auth apikey list
+
+# Revoke an API key
+anytype auth apikey revoke <key-id>
+```
+
+## Development
+
+### Project Structure
+
+```
+anytype-cli/
+├── cmd/              # CLI commands
+│   ├── auth/         # Authentication commands
+│   ├── serve/        # Server command
+│   ├── service/      # Service management
+│   ├── space/        # Space management
+│   └── ...
+├── core/             # Core business logic
+│   ├── grpcserver/   # Embedded gRPC server
+│   ├── serviceprogram/ # Service implementation
+│   └── ...
+└── dist/             # Build output
+```
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/anyproto/anytype-cli.git
+cd anytype-cli
+
+# Build (CGO is automatically enabled for tantivy)
+make build
+
+# Run tests
+go test ./...
+
+# Run linting
+make lint
 ```
 
 ## Contribution
