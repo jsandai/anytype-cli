@@ -15,7 +15,8 @@ import (
 func NewStatusCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
-		Short: "Check authentication status",
+		Short: "Show authentication status",
+		Long:  "Display current authentication status, including account information, server status, and stored credentials.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			hasMnemonic := false
 			if _, err := core.GetStoredMnemonic(); err == nil {

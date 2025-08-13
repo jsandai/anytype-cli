@@ -27,8 +27,8 @@ func getService() (service.Service, error) {
 
 	svcConfig := &service.Config{
 		Name:        "anytype",
-		DisplayName: "Anytype Server",
-		Description: "Anytype personal knowledge management server",
+		DisplayName: "Anytype",
+		Description: "Anytype",
 		Arguments:   []string{"serve"},
 		Option:      options,
 	}
@@ -40,39 +40,39 @@ func getService() (service.Service, error) {
 func NewServiceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "service",
-		Short: "Manage Anytype as a system service",
-		Long:  "Install, uninstall, and control Anytype as a system service.",
+		Short: "Manage anytype as a system service",
+		Long:  "Install, uninstall, start, stop, and check status of anytype running as a system service.",
 	}
 
 	cmd.AddCommand(
 		&cobra.Command{
 			Use:   "install",
-			Short: "Install Anytype as a system service",
+			Short: "Install as a system service",
 			RunE:  installService,
 		},
 		&cobra.Command{
 			Use:   "uninstall",
-			Short: "Uninstall the Anytype system service",
+			Short: "Uninstall the system service",
 			RunE:  uninstallService,
 		},
 		&cobra.Command{
 			Use:   "start",
-			Short: "Start the Anytype service",
+			Short: "Start the service",
 			RunE:  startService,
 		},
 		&cobra.Command{
 			Use:   "stop",
-			Short: "Stop the Anytype service",
+			Short: "Stop the service",
 			RunE:  stopService,
 		},
 		&cobra.Command{
 			Use:   "restart",
-			Short: "Restart the Anytype service",
+			Short: "Restart the service",
 			RunE:  restartService,
 		},
 		&cobra.Command{
 			Use:   "status",
-			Short: "Check the status of the Anytype service",
+			Short: "Check service status",
 			RunE:  statusService,
 		},
 	)
@@ -91,7 +91,7 @@ func installService(cmd *cobra.Command, args []string) error {
 		return output.Error("failed to install service: %w", err)
 	}
 
-	output.Success("Anytype service installed successfully")
+	output.Success("anytype service installed successfully")
 	output.Print("\nTo manage the service:")
 	output.Print("  Start:   anytype service start")
 	output.Print("  Stop:    anytype service stop")
@@ -112,7 +112,7 @@ func uninstallService(cmd *cobra.Command, args []string) error {
 		return output.Error("failed to uninstall service: %w", err)
 	}
 
-	output.Success("Anytype service uninstalled successfully")
+	output.Success("anytype service uninstalled successfully")
 	return nil
 }
 
@@ -127,7 +127,7 @@ func startService(cmd *cobra.Command, args []string) error {
 		return output.Error("failed to start service: %w", err)
 	}
 
-	output.Success("Anytype service started")
+	output.Success("anytype service started")
 	return nil
 }
 
@@ -142,7 +142,7 @@ func stopService(cmd *cobra.Command, args []string) error {
 		return output.Error("failed to stop service: %w", err)
 	}
 
-	output.Success("Anytype service stopped")
+	output.Success("anytype service stopped")
 	return nil
 }
 
@@ -157,7 +157,7 @@ func restartService(cmd *cobra.Command, args []string) error {
 		return output.Error("failed to restart service: %w", err)
 	}
 
-	output.Success("Anytype service restarted")
+	output.Success("anytype service restarted")
 	return nil
 }
 
@@ -170,7 +170,7 @@ func statusService(cmd *cobra.Command, args []string) error {
 	status, err := s.Status()
 	if err != nil {
 		if err == service.ErrNotInstalled {
-			output.Info("Anytype service is not installed")
+			output.Info("anytype service is not installed")
 			output.Info("Run 'anytype service install' to install it")
 			return nil
 		}
@@ -179,12 +179,12 @@ func statusService(cmd *cobra.Command, args []string) error {
 
 	switch status {
 	case service.StatusRunning:
-		output.Success("Anytype service is running")
+		output.Success("anytype service is running")
 	case service.StatusStopped:
-		output.Info("Anytype service is stopped")
+		output.Info("anytype service is stopped")
 		output.Info("Run 'anytype service start' to start it")
 	default:
-		output.Info("Anytype service status: %v", status)
+		output.Info("anytype service status: %v", status)
 	}
 
 	return nil

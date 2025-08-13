@@ -13,7 +13,8 @@ import (
 func NewAuthCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth <command>",
-		Short: "Authenticate with Anytype",
+		Short: "Manage authentication and accounts",
+		Long:  "Create accounts, log in/out, check authentication status, and manage API keys for programmatic access.",
 	}
 
 	cmd.AddCommand(authLoginCmd.NewLoginCmd())

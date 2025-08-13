@@ -14,7 +14,8 @@ import (
 func NewShellCmd(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "shell",
-		Short: "Start the Anytype interactive shell",
+		Short: "Start interactive shell mode",
+		Long:  "Launch an interactive shell where you can run Anytype commands without the 'anytype' prefix. Type 'exit' to quit.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			output.Info("Starting Anytype interactive shell. Type 'exit' to quit.")
 			return runShell(rootCmd)

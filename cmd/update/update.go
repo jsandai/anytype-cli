@@ -27,7 +27,8 @@ const (
 func NewUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
-		Short: "Update anytype CLI to the latest version",
+		Short: "Update to the latest version",
+		Long:  "Download and install the latest version of the Anytype CLI from GitHub releases.",
 		RunE:  runUpdate,
 	}
 }

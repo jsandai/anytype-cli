@@ -12,8 +12,8 @@ func NewServeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "serve",
 		Aliases: []string{"start"},
-		Short:   "Run the Anytype server",
-		Long:    "Run the Anytype server. When running as a system service, it will be managed by the service manager. When running interactively, use Ctrl+C to stop.",
+		Short:   "Run anytype in foreground",
+		Long:    "Run anytype in the foreground. Use Ctrl+C to stop. For background operation, use the service commands instead.",
 		RunE:    runServer,
 	}
 
@@ -23,8 +23,8 @@ func NewServeCmd() *cobra.Command {
 func runServer(cmd *cobra.Command, args []string) error {
 	svcConfig := &service.Config{
 		Name:        "anytype",
-		DisplayName: "Anytype Server",
-		Description: "Anytype personal knowledge management server",
+		DisplayName: "Anytype",
+		Description: "Anytype",
 	}
 
 	prg := serviceprogram.New()

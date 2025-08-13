@@ -22,8 +22,8 @@ var (
 	versionFlag bool
 	rootCmd     = &cobra.Command{
 		Use:   "anytype <command> <subcommand> [flags]",
-		Short: "Anytype CLI",
-		Long:  "Seamlessly interact with Anytype from the command line",
+		Short: "Command-line interface for Anytype",
+		Long:  "Command-line interface for Anytype",
 		Run: func(cmd *cobra.Command, args []string) {
 			if versionFlag {
 				output.Print(core.GetVersionBrief())

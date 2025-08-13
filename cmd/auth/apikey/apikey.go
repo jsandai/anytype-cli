@@ -12,8 +12,8 @@ import (
 func NewApiKeyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apikey <command>",
-		Short: "Manage API keys",
-		Long:  "Create, list, and revoke API keys for programmatic access",
+		Short: "Manage API keys for programmatic access",
+		Long:  "Create, list, and revoke API keys that can be used for programmatic access to Anytype.",
 	}
 
 	// Add subcommands
