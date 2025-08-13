@@ -45,9 +45,9 @@ download-tantivy: ## Download tantivy library for current platform
 			fi; \
 		elif [ "$(GOOS)" = "linux" ]; then \
 			if [ "$(GOARCH)" = "amd64" ]; then \
-				curl -L "https://github.com/anyproto/tantivy-go/releases/download/$(TANTIVY_VERSION)/linux-amd64.tar.gz" | tar xz -C $(TANTIVY_LIB_PATH); \
+				curl -L "https://github.com/anyproto/tantivy-go/releases/download/$(TANTIVY_VERSION)/linux-amd64-musl.tar.gz" | tar xz -C $(TANTIVY_LIB_PATH); \
 			elif [ "$(GOARCH)" = "arm64" ]; then \
-				curl -L "https://github.com/anyproto/tantivy-go/releases/download/$(TANTIVY_VERSION)/linux-arm64.tar.gz" | tar xz -C $(TANTIVY_LIB_PATH); \
+				curl -L "https://github.com/anyproto/tantivy-go/releases/download/$(TANTIVY_VERSION)/linux-arm64-musl.tar.gz" | tar xz -C $(TANTIVY_LIB_PATH); \
 			else \
 				echo "Unsupported architecture: $(GOARCH) for Linux"; \
 				exit 1; \
