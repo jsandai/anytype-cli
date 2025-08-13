@@ -12,6 +12,8 @@ import (
 	"github.com/anyproto/anytype-heart/pb/service"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 	"github.com/cheggaaa/mb/v3"
+
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 type EventReceiver struct {
@@ -73,7 +75,7 @@ func (er *EventReceiver) receiveLoop(ctx context.Context) {
 	for {
 		event, err := er.stream.Recv()
 		if errors.Is(err, io.EOF) {
-			fmt.Println("🔄 Event stream ended")
+			output.Info("🔄 Event stream ended")
 			return
 		}
 		if err != nil {
@@ -81,7 +83,7 @@ func (er *EventReceiver) receiveLoop(ctx context.Context) {
 				// Context cancelled, clean shutdown
 				return
 			}
-			fmt.Printf("✗ Event stream error: %v\n", err)
+			output.Warning("Event stream error: %v", err)
 			return
 		}
 
@@ -90,7 +92,7 @@ func (er *EventReceiver) receiveLoop(ctx context.Context) {
 				if ctx.Err() != nil {
 					return
 				}
-				fmt.Printf("✗ Failed to add event to queue: %v\n", err)
+				output.Warning("Failed to add event to queue: %v", err)
 			}
 		}
 	}

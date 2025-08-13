@@ -1,11 +1,10 @@
 package revoke
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewRevokeCmd() *cobra.Command {
@@ -19,10 +18,10 @@ func NewRevokeCmd() *cobra.Command {
 
 			err := core.RevokeAPIKey(appId)
 			if err != nil {
-				return fmt.Errorf("✗ Failed to revoke API key: %w", err)
+				return output.Error("failed to revoke API key: %w", err)
 			}
 
-			fmt.Printf("✓ API key with ID '%s' revoked successfully\n", appId)
+			output.Success("API key with ID '%s' revoked successfully", appId)
 			return nil
 		},
 	}

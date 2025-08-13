@@ -6,6 +6,7 @@ import (
 
 	"github.com/anyproto/anytype-cli/core"
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 )
 
@@ -21,33 +22,36 @@ func NewCreateCmd() *cobra.Command {
 		Long:  "Create a new Anytype account with a generated mnemonic phrase",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
-				return fmt.Errorf("account name is required")
+				return output.Error("account name is required")
 			}
 
 			mnemonic, accountID, err := core.CreateWallet(name, rootPath, apiAddr)
 			if err != nil {
-				return fmt.Errorf("failed to create account: %w", err)
+				return output.Error("failed to create account: %w", err)
 			}
 
-			fmt.Println("✓ Account created successfully!")
+			output.Success("Account created successfully!")
 
-			fmt.Println("\n⚠️ IMPORTANT: Save your mnemonic phrase in a secure location.")
-			fmt.Println("   This is the ONLY way to recover your account if you lose access.")
+			output.Warning("IMPORTANT: Save your mnemonic phrase in a secure location.")
+			output.Info("   This is the ONLY way to recover your account if you lose access.")
 
 			words := strings.Split(mnemonic, " ")
-			fmt.Println("\n╔════════════════════════════════════════════════════════╗")
-			fmt.Println("║                    MNEMONIC PHRASE                     ║")
-			fmt.Println("╠════════════════════════════════════════════════════════╣")
-			fmt.Printf("║  %-52s  ║\n", strings.Join(words[0:6], " "))
-			fmt.Printf("║  %-52s  ║\n", strings.Join(words[6:12], " "))
-			fmt.Println("╚════════════════════════════════════════════════════════╝")
+			output.Print("")
+			output.Print("╔════════════════════════════════════════════════════════╗")
+			output.Print("║                    MNEMONIC PHRASE                     ║")
+			output.Print("╠════════════════════════════════════════════════════════╣")
+			output.Print("║  %-52s  ║", strings.Join(words[0:6], " "))
+			output.Print("║  %-52s  ║", strings.Join(words[6:12], " "))
+			output.Print("╚════════════════════════════════════════════════════════╝")
 
-			fmt.Println("\n📋 Account Details:")
-			fmt.Printf("   Name: %s\n", name)
-			fmt.Printf("   ID: %s\n", accountID)
+			output.Print("")
+			output.Print("📋 Account Details:")
+			output.Print("   Name: %s", name)
+			output.Print("   ID: %s", accountID)
 
-			fmt.Println("\n✓ You are now logged in to your new account.")
-			fmt.Println("✓ Mnemonic saved to keychain.")
+			output.Print("")
+			output.Success("You are now logged in to your new account.")
+			output.Success("Mnemonic saved to keychain.")
 
 			return nil
 		},

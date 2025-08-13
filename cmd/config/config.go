@@ -10,9 +10,10 @@ import (
 
 func NewConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "config <command>",
-		Short: "Manage configuration",
-		Long:  `Manage Anytype CLI configuration settings`,
+		Use:    "config <command>",
+		Short:  "Manage configuration",
+		Long:   `Manage Anytype CLI configuration settings`,
+		Hidden: true,
 	}
 
 	cmd.AddCommand(configGetCmd.NewGetCmd())

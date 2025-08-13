@@ -1,9 +1,8 @@
 package reset
 
 import (
-	"fmt"
-
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,10 +14,10 @@ func NewResetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configMgr := config.GetConfigManager()
 			if err := configMgr.Reset(); err != nil {
-				return fmt.Errorf("failed to reset config: %w", err)
+				return output.Error("failed to reset config: %w", err)
 			}
 
-			fmt.Println("Configuration reset to defaults")
+			output.Success("Configuration reset to defaults")
 			return nil
 		},
 	}

@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 )
 
@@ -32,11 +33,11 @@ func NewUpdateCmd() *cobra.Command {
 }
 
 func runUpdate(cmd *cobra.Command, args []string) error {
-	fmt.Println("Checking for updates...")
+	output.Info("Checking for updates...")
 
 	latest, err := getLatestVersion()
 	if err != nil {
-		return fmt.Errorf("failed to check latest version: %w", err)
+		return output.Error("failed to check latest version: %w", err)
 	}
 
 	current := core.GetVersion()
@@ -47,18 +48,18 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	if currentBase >= latest {
-		fmt.Printf("Already up to date (%s)\n", current)
+		output.Info("Already up to date (%s)", current)
 		return nil
 	}
 
-	fmt.Printf("Updating from %s to %s...\n", current, latest)
+	output.Info("Updating from %s to %s...", current, latest)
 
 	if err := downloadAndInstall(latest); err != nil {
-		return fmt.Errorf("update failed: %w", err)
+		return output.Error("update failed: %w", err)
 	}
 
-	fmt.Printf("Successfully updated to %s\n", latest)
-	fmt.Println("Restart your terminal or run 'anytype' to use the new version")
+	output.Success("Successfully updated to %s", latest)
+	output.Info("Restart your terminal or run 'anytype' to use the new version")
 	return nil
 }
 
@@ -126,7 +127,7 @@ func getArchiveName(version string) string {
 
 func downloadRelease(version, destination string) error {
 	archiveName := filepath.Base(destination)
-	fmt.Printf("Downloading %s...\n", archiveName)
+	output.Info("Downloading %s...", archiveName)
 
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		return downloadViaAPI(version, archiveName, destination)

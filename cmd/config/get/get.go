@@ -1,9 +1,8 @@
 package get
 
 import (
-	"fmt"
-
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,17 +14,17 @@ func NewGetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configMgr := config.GetConfigManager()
 			if err := configMgr.Load(); err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
+				return output.Error("failed to load config: %w", err)
 			}
 
 			cfg := configMgr.Get()
 
 			if len(args) == 0 {
 				if cfg.AccountID != "" {
-					fmt.Printf("accountId: %s\n", cfg.AccountID)
+					output.Info("accountId: %s", cfg.AccountID)
 				}
 				if cfg.TechSpaceID != "" {
-					fmt.Printf("techSpaceId: %s\n", cfg.TechSpaceID)
+					output.Info("techSpaceId: %s", cfg.TechSpaceID)
 				}
 				return nil
 			}
@@ -34,14 +33,14 @@ func NewGetCmd() *cobra.Command {
 			switch key {
 			case "accountId", "accountID":
 				if cfg.AccountID != "" {
-					fmt.Println(cfg.AccountID)
+					output.Info(cfg.AccountID)
 				}
 			case "techSpaceId", "techSpaceID":
 				if cfg.TechSpaceID != "" {
-					fmt.Println(cfg.TechSpaceID)
+					output.Info(cfg.TechSpaceID)
 				}
 			default:
-				return fmt.Errorf("unknown config key: %s", key)
+				return output.Error("unknown config key: %s", key)
 			}
 
 			return nil

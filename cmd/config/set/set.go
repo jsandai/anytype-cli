@@ -1,9 +1,8 @@
 package set
 
 import (
-	"fmt"
-
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 )
 
@@ -19,23 +18,23 @@ func NewSetCmd() *cobra.Command {
 
 			configMgr := config.GetConfigManager()
 			if err := configMgr.Load(); err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
+				return output.Error("failed to load config: %w", err)
 			}
 
 			switch key {
 			case "accountId", "accountID":
 				if err := configMgr.SetAccountID(value); err != nil {
-					return fmt.Errorf("failed to set account ID: %w", err)
+					return output.Error("failed to set account ID: %w", err)
 				}
 			case "techSpaceId", "techSpaceID":
 				if err := configMgr.SetTechSpaceID(value); err != nil {
-					return fmt.Errorf("failed to set tech space ID: %w", err)
+					return output.Error("failed to set tech space ID: %w", err)
 				}
 			default:
-				return fmt.Errorf("unknown config key: %s", key)
+				return output.Error("unknown config key: %s", key)
 			}
 
-			fmt.Printf("Set %s = %s\n", key, value)
+			output.Success("Set %s = %s", key, value)
 			return nil
 		},
 	}

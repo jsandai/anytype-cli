@@ -1,11 +1,10 @@
 package leave
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewLeaveCmd() *cobra.Command {
@@ -18,10 +17,10 @@ func NewLeaveCmd() *cobra.Command {
 			spaceID := args[0]
 
 			if err := core.LeaveSpace(spaceID); err != nil {
-				return fmt.Errorf("failed to leave space: %w", err)
+				return output.Error("failed to leave space: %w", err)
 			}
 
-			fmt.Printf("Successfully sent leave request for space with ID: %s\n", spaceID)
+			output.Success("Successfully sent leave request for space with ID: %s", spaceID)
 			return nil
 		},
 	}

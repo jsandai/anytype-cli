@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewListCmd() *cobra.Command {
@@ -20,11 +21,11 @@ func NewListCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resp, err := core.ListAPIKeys()
 			if err != nil {
-				return fmt.Errorf("✗ Failed to list API keys: %w", err)
+				return output.Error("failed to list API keys: %w", err)
 			}
 
 			if len(resp.App) == 0 {
-				fmt.Println("No API keys found.")
+				output.Info("No API keys found.")
 				return nil
 			}
 

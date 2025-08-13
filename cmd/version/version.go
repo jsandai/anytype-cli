@@ -1,11 +1,10 @@
 package version
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewVersionCmd() *cobra.Command {
@@ -16,9 +15,9 @@ func NewVersionCmd() *cobra.Command {
 		Short: "Show version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if verbose {
-				fmt.Println(core.GetVersionVerbose())
+				output.Info(core.GetVersionVerbose())
 			} else {
-				fmt.Println(core.GetVersionBrief())
+				output.Info(core.GetVersionBrief())
 			}
 			return nil
 		},
