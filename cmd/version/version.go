@@ -13,6 +13,7 @@ func NewVersionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show version information",
+		Long:  "Display version information for the Anytype CLI. Use --verbose for detailed build information.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if verbose {
 				output.Info(core.GetVersionVerbose())

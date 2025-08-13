@@ -18,8 +18,8 @@ func NewCreateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create a new Anytype account",
-		Long:  "Create a new Anytype account with a generated mnemonic phrase",
+		Short: "Create a new account",
+		Long:  "Create a new Anytype account with a generated mnemonic phrase. The mnemonic is your master key for account recovery.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
 				return output.Error("account name is required")

@@ -81,7 +81,7 @@ func GRPCCall(fn func(ctx context.Context, client service.ClientCommandsClient) 
 	err = fn(ctx, client)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.Unavailable {
-			return fmt.Errorf("server is not running. Start it with: anytype serve")
+			return fmt.Errorf("anytype is not running. Start it with: anytype serve")
 		}
 		return err
 	}
@@ -101,7 +101,7 @@ func GRPCCallNoAuth(fn func(ctx context.Context, client service.ClientCommandsCl
 	err = fn(ctx, client)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.Unavailable {
-			return fmt.Errorf("server is not running. Start it with: anytype serve")
+			return fmt.Errorf("anytype is not running. Start it with: anytype serve")
 		}
 		return err
 	}

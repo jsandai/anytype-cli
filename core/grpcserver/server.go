@@ -53,7 +53,7 @@ func (s *Server) Start(grpcAddr, grpcWebAddr string) error {
 	// Initialize metrics
 	metrics.Service.InitWithKeys(metrics.DefaultInHouseKey)
 
-	log.Info("Starting Anytype server...")
+	log.Info("Starting anytype...")
 
 	// Create middleware
 	s.mw = core.New()

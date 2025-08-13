@@ -13,7 +13,8 @@ import (
 func NewLoginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
-		Short: "Log in to your Anytype vault",
+		Short: "Log in to your account",
+		Long:  "Authenticate using your mnemonic phrase to access your Anytype account and stored data.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mnemonic, _ := cmd.Flags().GetString("mnemonic")
 			rootPath, _ := cmd.Flags().GetString("path")

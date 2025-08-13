@@ -12,6 +12,7 @@ func NewSpaceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "space <command>",
 		Short: "Manage spaces",
+		Long:  "Join, leave, and list spaces",
 	}
 
 	cmd.AddCommand(spaceJoinCmd.NewJoinCmd())
