@@ -170,7 +170,6 @@ install_binary() {
     if ! chmod +x "$INSTALL_DIR/$BINARY_NAME"; then
         error "Failed to make binary executable"
     fi
-    success "Binary installed successfully"
 }
 
 check_path() {
@@ -197,17 +196,14 @@ check_path() {
         echo
         info "Or for this session only:"
         echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
-    else
-        success "$INSTALL_DIR is already in your PATH"
     fi
 }
 
 verify_installation() {
     if command -v "$BINARY_NAME" &> /dev/null; then
-        local version
-        version=$("$BINARY_NAME" version 2>/dev/null || echo "unknown")
-        success "${BINARY_NAME} is now available (version: $version)"
+        success "${BINARY_NAME} installed successfully!"
     else
+        echo
         info "Run the following to use ${BINARY_NAME}:"
         echo "  $INSTALL_DIR/$BINARY_NAME"
     fi
@@ -217,10 +213,10 @@ main() {
     local temp_dir
     temp_dir=$(mktemp -d)
     trap "rm -rf '$temp_dir'" EXIT
-    
-    echo "================================"
-    echo "  Anytype CLI Installer"
-    echo "================================"
+
+    echo "---------------------"
+    echo "Anytype CLI Installer"
+    echo "---------------------"
     echo
     check_requirements
     local platform
@@ -229,20 +225,15 @@ main() {
     local version
     version=$(get_latest_version)
     success "Latest version: $version"
+    echo
     local binary_path
     binary_path=$(download_binary "$version" "$platform" "$temp_dir")
     install_binary "$binary_path"
     check_path
-    echo
     verify_installation
-    
-    echo
-    echo "================================"
-    echo "  Installation Complete!"
-    echo "================================"
     echo
     info "Get started with: ${BINARY_NAME} --help"
-    info "For more information, visit: https://github.com/${REPO_OWNER}/${REPO_NAME}"
+    info "Learn more: https://github.com/${REPO_OWNER}/${REPO_NAME}"
 }
 
 main "$@"

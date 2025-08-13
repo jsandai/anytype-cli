@@ -17,14 +17,24 @@ anytype serve
 
 ## Installation
 
-### Prerequisites
+### Quick Install (Recommended)
+
+Install the latest release with a single command:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/anyproto/anytype-cli/HEAD/install.sh)"
+```
+
+### Build from Source
+
+#### Prerequisites
 
 - Go 1.20 or later
 - Git
 - Make
 - C++ compiler (for tantivy library)
 
-### Build and Install
+#### Build and Install
 
 ```bash
 # Build only (automatically downloads tantivy library)
