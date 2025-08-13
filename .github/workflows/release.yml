@@ -61,7 +61,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: anytype-cli-releases
-          path: anytype-cli-*.{tar.gz,zip}
+          path: |
+            anytype-cli-*.tar.gz
+            anytype-cli-*.zip
 
   create-release:
     needs: build-all-platforms
