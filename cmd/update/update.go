@@ -261,7 +261,7 @@ func extractZip(archivePath, destDir string) error {
 		target := filepath.Join(destDir, f.Name)
 
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(target, f.Mode())
+			_ = os.MkdirAll(target, f.Mode())
 			continue
 		}
 

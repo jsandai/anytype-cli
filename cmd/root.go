@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/cmd/auth"
@@ -14,8 +16,6 @@ import (
 	"github.com/anyproto/anytype-cli/cmd/space"
 	"github.com/anyproto/anytype-cli/cmd/update"
 	"github.com/anyproto/anytype-cli/cmd/version"
-	"github.com/anyproto/anytype-cli/core"
-	"github.com/anyproto/anytype-cli/core/output"
 )
 
 var (
@@ -26,10 +26,10 @@ var (
 		Long:  "Seamlessly interact with Anytype from the command line",
 		Run: func(cmd *cobra.Command, args []string) {
 			if versionFlag {
-				printVersion()
+				output.Print(core.GetVersionBrief())
 				return
 			}
-			cmd.Help()
+			_ = cmd.Help()
 		},
 	}
 )
@@ -58,8 +58,4 @@ func init() {
 		update.NewUpdateCmd(),
 		version.NewVersionCmd(),
 	)
-}
-
-func printVersion() {
-	output.Print(core.GetVersionBrief())
 }
