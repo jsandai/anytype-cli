@@ -1,8 +1,8 @@
 package join
 
 import (
-	"fmt"
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"net/url"
 	"strings"
 
@@ -34,36 +34,36 @@ func NewJoinCmd() *cobra.Command {
 			if strings.HasPrefix(input, "https://invite.any.coop/") {
 				u, err := url.Parse(input)
 				if err != nil {
-					return fmt.Errorf("invalid invite link: %w", err)
+					return output.Error("invalid invite link: %w", err)
 				}
 
 				path := strings.TrimPrefix(u.Path, "/")
 				if path == "" {
-					return fmt.Errorf("invite link missing CID")
+					return output.Error("invite link missing CID")
 				}
 				inviteCID = path
 
 				inviteFileKey = u.Fragment
 				if inviteFileKey == "" {
-					return fmt.Errorf("invite link missing key (should be after #)")
+					return output.Error("invite link missing key (should be after #)")
 				}
 
 				info, err := core.ViewSpaceInvite(inviteCID, inviteFileKey)
 				if err != nil {
-					return fmt.Errorf("failed to view invite: %w", err)
+					return output.Error("failed to view invite: %w", err)
 				}
 
-				fmt.Printf("Joining space '%s' created by %s...\n", info.SpaceName, info.CreatorName)
+				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
 				spaceID = info.SpaceID
 			} else {
-				return fmt.Errorf("invalid invite link format, expected: https://invite.any.coop/{cid}#{key}")
+				return output.Error("invalid invite link format, expected: https://invite.any.coop/{cid}#{key}")
 			}
 
 			if err := core.JoinSpace(networkID, spaceID, inviteCID, inviteFileKey); err != nil {
-				return fmt.Errorf("failed to join space: %w", err)
+				return output.Error("failed to join space: %w", err)
 			}
 
-			fmt.Printf("Successfully sent join request to space '%s'\n", spaceID)
+			output.Success("Successfully sent join request to space '%s'", spaceID)
 			return nil
 		},
 	}

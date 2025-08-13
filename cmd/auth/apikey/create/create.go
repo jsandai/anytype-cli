@@ -1,11 +1,10 @@
 package create
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewCreateCmd() *cobra.Command {
@@ -19,12 +18,12 @@ func NewCreateCmd() *cobra.Command {
 
 			resp, err := core.CreateAPIKey(name)
 			if err != nil {
-				return fmt.Errorf("✗ Failed to create API key: %w", err)
+				return output.Error("failed to create API key: %w", err)
 			}
 
-			fmt.Println("✓ API key created successfully")
-			fmt.Println("ℹ Name:", name)
-			fmt.Println("ℹ Key:", resp.AppKey)
+			output.Success("API key created successfully")
+			output.Info("Name: %s", name)
+			output.Info("Key: %s", resp.AppKey)
 
 			return nil
 		},

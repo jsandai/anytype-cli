@@ -4,14 +4,16 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/anyproto/anytype-heart/pb"
-	"github.com/anyproto/anytype-heart/pb/service"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/anyproto/anytype-heart/pb"
+	"github.com/anyproto/anytype-heart/pb/service"
+
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 // getDefaultDataPath returns the default data path for Anytype based on the operating system
@@ -111,7 +113,7 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	if err != nil {
 		return fmt.Errorf("error waiting for account ID: %w", err)
 	}
-	fmt.Println("ℹ Account ID:", accountID)
+	output.Info("Account ID: %s", accountID)
 
 	var techSpaceID string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
@@ -134,14 +136,14 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Load(); err != nil {
-		fmt.Println("Warning: failed to load config:", err)
+		output.Warning("failed to load config: %v", err)
 	}
 	if err := configMgr.SetAccountID(accountID); err != nil {
-		fmt.Println("Warning: failed to save account ID:", err)
+		output.Warning("failed to save account ID: %v", err)
 	}
 	if techSpaceID != "" {
 		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
-			fmt.Println("Warning: failed to save tech space ID:", err)
+			output.Warning("failed to save tech space ID: %v", err)
 		}
 	}
 
@@ -154,10 +156,10 @@ func Login(mnemonic, rootPath, apiAddr string) error {
 		storedMnemonic, err := GetStoredMnemonic()
 		if err == nil && storedMnemonic != "" {
 			mnemonic = storedMnemonic
-			fmt.Println("Using stored mnemonic from keychain.")
+			output.Info("Using stored mnemonic from keychain.")
 			usedStoredMnemonic = true
 		} else {
-			fmt.Print("Enter mnemonic (12 words): ")
+			output.Print("Enter mnemonic (12 words): ")
 			reader := bufio.NewReader(os.Stdin)
 			mnemonic, _ = reader.ReadString('\n')
 			mnemonic = strings.TrimSpace(mnemonic)
@@ -175,9 +177,9 @@ func Login(mnemonic, rootPath, apiAddr string) error {
 
 	if !usedStoredMnemonic {
 		if err := SaveMnemonic(mnemonic); err != nil {
-			fmt.Println("Warning: failed to save mnemonic in keychain:", err)
+			output.Warning("failed to save mnemonic in keychain: %v", err)
 		} else {
-			fmt.Println("✓ Mnemonic saved to keychain.")
+			output.Success("Mnemonic saved to keychain.")
 		}
 	}
 
@@ -199,7 +201,7 @@ func Logout() error {
 			return fmt.Errorf("failed to log out: %w", err)
 		}
 		if resp.Error.Code != pb.RpcAccountStopResponseError_NULL {
-			fmt.Println("Failed to log out:", resp.Error.Description)
+			output.Warning("Failed to log out: %s", resp.Error.Description)
 		}
 
 		resp2, err := client.WalletCloseSession(ctx, &pb.RpcWalletCloseSessionRequest{Token: token})
@@ -207,7 +209,7 @@ func Logout() error {
 			return fmt.Errorf("failed to close session: %w", err)
 		}
 		if resp2.Error.Code != pb.RpcWalletCloseSessionResponseError_NULL {
-			fmt.Println("Failed to close session:", resp2.Error.Description)
+			output.Warning("Failed to close session: %s", resp2.Error.Description)
 		}
 
 		return nil
@@ -227,7 +229,7 @@ func Logout() error {
 
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Delete(); err != nil {
-		fmt.Println("Warning: failed to clear config:", err)
+		output.Warning("failed to clear config: %v", err)
 	}
 
 	CloseEventReceiver()
@@ -331,14 +333,14 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Load(); err != nil {
-		fmt.Println("Warning: failed to load config:", err)
+		output.Warning("failed to load config: %v", err)
 	}
 	if err := configMgr.SetAccountID(accountID); err != nil {
-		fmt.Println("Warning: failed to save account ID:", err)
+		output.Warning("failed to save account ID: %v", err)
 	}
 	if techSpaceID != "" {
 		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
-			fmt.Println("Warning: failed to save tech space ID:", err)
+			output.Warning("failed to save tech space ID: %v", err)
 		}
 	}
 

@@ -1,12 +1,14 @@
 package shell
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"strings"
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
+
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewShellCmd(rootCmd *cobra.Command) *cobra.Command {
@@ -14,7 +16,7 @@ func NewShellCmd(rootCmd *cobra.Command) *cobra.Command {
 		Use:   "shell",
 		Short: "Start the Anytype interactive shell",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Starting Anytype interactive shell. Type 'exit' to quit.")
+			output.Info("Starting Anytype interactive shell. Type 'exit' to quit.")
 			return runShell(rootCmd)
 		},
 	}
@@ -29,21 +31,21 @@ func runShell(rootCmd *cobra.Command) error {
 		AutoComplete:    buildCompleter(rootCmd),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to initialize readline: %w", err)
+		return output.Error("failed to initialize readline: %w", err)
 	}
 	defer rl.Close()
 
 	for {
 		line, err := rl.Readline()
-		if err == readline.ErrInterrupt {
+		if errors.Is(err, readline.ErrInterrupt) {
 			if len(line) == 0 {
-				fmt.Println("Use 'exit' or 'quit' to leave the shell")
+				output.Info("Use 'exit' or 'quit' to leave the shell")
 				continue
 			}
 		} else if err == io.EOF {
 			return nil
 		} else if err != nil {
-			fmt.Println("Error reading input:", err)
+			output.Warning("Error reading input: %v", err)
 			continue
 		}
 
@@ -61,7 +63,7 @@ func runShell(rootCmd *cobra.Command) error {
 		rootCmd.SetArgs(args)
 
 		if err := rootCmd.Execute(); err != nil {
-			fmt.Println("Command error:", err)
+			output.Warning("Command error: %v", err)
 		}
 	}
 }

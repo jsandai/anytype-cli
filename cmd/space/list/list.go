@@ -1,11 +1,10 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/output"
 )
 
 func NewListCmd() *cobra.Command {
@@ -16,16 +15,16 @@ func NewListCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spaces, err := core.ListSpaces()
 			if err != nil {
-				return fmt.Errorf("failed to list spaces: %w", err)
+				return output.Error("failed to list spaces: %w", err)
 			}
 
 			if len(spaces) == 0 {
-				fmt.Println("No spaces found")
+				output.Info("No spaces found")
 				return nil
 			}
 
-			fmt.Printf("%-75s %-30s %s\n", "SPACE ID", "NAME", "STATUS")
-			fmt.Printf("%-75s %-30s %s\n", "────────", "────", "──────")
+			output.Info("%-75s %-30s %s", "SPACE ID", "NAME", "STATUS")
+			output.Info("%-75s %-30s %s", "────────", "────", "──────")
 
 			for _, space := range spaces {
 				status := "Active"
@@ -38,7 +37,7 @@ func NewListCmd() *cobra.Command {
 					name = name[:25] + "..."
 				}
 
-				fmt.Printf("%-75s %-30s %s\n", space.SpaceID, name, status)
+				output.Info("%-75s %-30s %s", space.SpaceID, name, status)
 			}
 
 			return nil
