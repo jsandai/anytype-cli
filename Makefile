@@ -25,13 +25,13 @@ GOLANGCI_LINT_VERSION := v2.2.1
 
 ##@ Build
 
-build: download-tantivy ## Build the CLI binary
-	@echo "Building Anytype CLI with embedded server..."
+build: download-tantivy ## Build the cli binary
+	@echo "Building anytype-cli with embedded anytype-heart server..."
 	@CGO_ENABLED=1 CGO_LDFLAGS="$(CGO_LDFLAGS)" GOOS=$(GOOS) GOARCH=$(GOARCH) go build -tags "$(BUILD_TAGS)" -ldflags "$(LDFLAGS)" -o $(OUTPUT)
 	@echo "Built successfully: $(OUTPUT)"
 
 cross-compile: ## Build for all platforms
-	@echo "Cross-compiling for all platforms..."
+	@echo "Cross-compiling anytype-cli for all platforms..."
 	@$(MAKE) build-darwin-amd64
 	@$(MAKE) build-darwin-arm64
 	@$(MAKE) build-windows-amd64
