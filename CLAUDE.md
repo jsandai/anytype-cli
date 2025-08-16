@@ -23,13 +23,22 @@ make clean-tantivy
 
 # Run linting
 make lint
+
+# Cross-compile for all platforms
+make cross-compile
+
+# Build for specific platform
+make build-darwin-amd64
+make build-linux-amd64
+make build-windows-amd64
 ```
 
 ### Build Requirements
 
 - **CGO**: The build requires CGO_ENABLED=1 due to tantivy (full-text search library) dependencies
 - **Tantivy Library**: Automatically downloaded for your platform during `make build`
-- **C++ Compiler**: Required for linking tantivy library (clang on macOS, gcc on Linux)
+- **C++ Compiler**: Required for linking tantivy library (clang on macOS, gcc on Linux, mingw on Windows)
+- **Go 1.20+**: Required for building the project
 
 ## Development Workflow
 
@@ -52,10 +61,32 @@ make lint
    ```bash
    go fmt ./...
    go vet ./...
-   make lint  # Uses golangci-lint
+   make lint  # Uses golangci-lint v2.2.1
+   ```
+
+4. **Testing**:
+   ```bash
+   # Run all tests
+   make test
+   
+   # Run tests with coverage
+   go test -cover ./...
+   
+   # Run tests for specific package
+   go test ./core/...
+   go test ./cmd/...
+   
+   # Run specific test
+   go test -run TestValidateMnemonic ./core
+   
+   # Run tests with verbose output
+   go test -v ./...
    ```
 
 ## Architecture Overview
+
+### Embedded Server Architecture
+The CLI embeds the anytype-heart gRPC server directly, creating a self-contained binary. This eliminates the need for separate server installation or management. The server runs either interactively (`anytype serve`) or as a system service.
 
 ### Command Structure (`/cmd/`)
 - Uses Cobra framework for CLI commands
@@ -71,35 +102,40 @@ make lint
 - `root.go` registers all commands
 
 ### Core Logic (`/core/`)
-- `client.go`: gRPC client singleton for server communication
+- `client.go`: gRPC client singleton using sync.Once for lazy initialization
 - `auth.go`: Authentication logic with keyring integration
 - `space.go`: Space management operations
-- `stream.go`: Event streaming functionality with EventReceiver
-- `keyring.go`: Secure credential storage (tokens and API keys)
+- `stream.go`: Event streaming with EventReceiver and message batching (cheggaaa/mb)
+- `keyring.go`: Secure credential storage using system keyring
 - `apikey.go`: API key generation and management
-- `config/constants.go`: Centralized configuration constants
-- `serviceprogram/`: Service implementation using kardianos/service
+- `config/`: Configuration management with constants
+- `serviceprogram/`: Cross-platform service implementation (Windows Service, macOS launchd, Linux systemd)
 - `grpcserver/`: Embedded gRPC server implementation
 
 ## Key Dependencies
 
-- `github.com/anyproto/anytype-heart v0.42.0`: The middleware server (embedded)
-- `github.com/spf13/cobra v1.8.1`: CLI framework
-- `google.golang.org/grpc v1.73.0`: gRPC communication
-- `github.com/zalando/go-keyring`: Secure credential storage
-- `github.com/cheggaaa/mb/v3 v3.2.0`: Message batching queue for event handling
+- `github.com/anyproto/anytype-heart v0.42.3`: The embedded middleware server (provides all Anytype functionality)
+- `github.com/spf13/cobra v1.9.1`: CLI framework for command structure
+- `google.golang.org/grpc v1.74.2`: gRPC client-server communication
+- `github.com/zalando/go-keyring v0.2.6`: Secure credential storage in system keyring
+- `github.com/cheggaaa/mb/v3 v3.0.2`: Message batching queue for event handling
 - `github.com/kardianos/service v1.2.4`: Cross-platform system service management
+- `github.com/anyproto/tantivy-go v1.0.4`: Full-text search capabilities (requires CGO)
 
 ## Important Notes
 
 1. **Service Architecture**: The CLI includes an embedded gRPC server that runs as a system service or interactively
 2. **Cross-Platform Service**: Works on Windows (Service), macOS (launchd), Linux (systemd/upstart/sysv)
 3. **Keyring Integration**: Authentication tokens are stored securely in the system keyring
-4. **gRPC Communication**: All server interaction happens via gRPC on localhost:31007
-5. **Event Streaming**: Uses server-sent events for real-time updates
+4. **Port Configuration**:
+   - gRPC: localhost:31007
+   - gRPC-Web: localhost:31008
+   - API: localhost:31009
+5. **Event Streaming**: Uses server-sent events for real-time updates with message batching
 6. **Version Management**: Version info is injected at build time via ldflags
 7. **Self-Updating**: The CLI can update itself using the `anytype update` command
 8. **API Keys**: Support for generating API keys for programmatic access
+9. **Test Infrastructure**: Basic test structure with testify framework for assertions
 
 ## Common Development Tasks
 
@@ -151,17 +187,34 @@ func NewConfigCmd() *cobra.Command {
 }
 ```
 
+### Working with the gRPC Client
+- Client singleton is initialized lazily in `core/client.go`
+- Use `core.GRPCCall()` for authenticated calls
+- Use `core.GRPCCallNoAuth()` for unauthenticated calls
+- Connection errors automatically trigger reconnection attempts
+
 ### Working with the Service
-- Service is managed via the `anytype serve` command
+- Service is managed via the `anytype service` command
 - Service program implementation is in `core/serviceprogram/`
-- Supports both interactive mode and system service installation
+- Supports both interactive mode (`anytype serve`) and system service installation
+- Service logs are written to log files in the user's home directory (~/.anytype/logs/)
 
 ### Error Handling
 - Client connection errors are handled in `core/client.go`
 - Server startup errors are managed in `core/serviceprogram/serviceprogram.go`
-- Use standard Go error wrapping with context
+- Use standard Go error wrapping with `fmt.Errorf("context: %w", err)`
+- Display user-friendly errors with `output.Error()`
 
 ### API Key Management
 - API keys are created and managed by the server via gRPC APIs
 - The CLI provides commands to create, list, and revoke API keys
 - Keys are generated server-side and can be used for programmatic access
+- Keys are stored in the system keyring alongside tokens
+
+### Testing Strategy
+- **Unit Tests**: Test individual functions and logic in isolation
+- **Command Tests**: Test Cobra command execution with mocked dependencies
+- **Test Helpers**: Common test utilities in `testutil/` package
+- **Mocking**: Use testify/mock for external dependencies
+- **Focus on Logic**: Tests focus on business logic, not structure
+- **Test Files**: Follow Go convention with `*_test.go` in same package
