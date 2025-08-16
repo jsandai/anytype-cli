@@ -1,0 +1,110 @@
+package config
+
+import (
+	"os"
+	"path/filepath"
+	"sync"
+	"testing"
+)
+
+func TestConfigManager(t *testing.T) {
+	originalInstance := instance
+	defer func() {
+		instance = originalInstance
+		once = sync.Once{}
+	}()
+
+	instance = nil
+	once = sync.Once{}
+
+	t.Run("SaveAndLoad", func(t *testing.T) {
+		tempDir, err := os.MkdirTemp("", "anytype-config-test")
+		if err != nil {
+			t.Fatalf("Failed to create temp dir: %v", err)
+		}
+		defer os.RemoveAll(tempDir)
+
+		configPath := filepath.Join(tempDir, "config.json")
+		testConfig := &Config{
+			AccountID:   "test-account-123",
+			TechSpaceID: "test-tech-space-789",
+		}
+
+		cm := &ConfigManager{
+			config:   testConfig,
+			filePath: configPath,
+		}
+
+		err = cm.Save()
+		if err != nil {
+			t.Errorf("Save failed: %v", err)
+		}
+
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			t.Error("Config file was not created")
+		}
+
+		cm2 := &ConfigManager{
+			config:   &Config{},
+			filePath: configPath,
+		}
+
+		err = cm2.Load()
+		if err != nil {
+			t.Errorf("Load failed: %v", err)
+		}
+
+		cfg := cm2.Get()
+		if cfg.AccountID != testConfig.AccountID {
+			t.Errorf("AccountID = %v, want %v", cfg.AccountID, testConfig.AccountID)
+		}
+		if cfg.TechSpaceID != testConfig.TechSpaceID {
+			t.Errorf("TechSpaceID = %v, want %v", cfg.TechSpaceID, testConfig.TechSpaceID)
+		}
+	})
+
+	t.Run("Delete", func(t *testing.T) {
+		tempDir, err := os.MkdirTemp("", "anytype-config-test")
+		if err != nil {
+			t.Fatalf("Failed to create temp dir: %v", err)
+		}
+		defer os.RemoveAll(tempDir)
+
+		configPath := filepath.Join(tempDir, "config.json")
+		cm := &ConfigManager{
+			config:   &Config{AccountID: "test"},
+			filePath: configPath,
+		}
+
+		_ = cm.Save()
+
+		err = cm.Delete()
+		if err != nil {
+			t.Errorf("Delete failed: %v", err)
+		}
+
+		if _, err := os.Stat(configPath); !os.IsNotExist(err) {
+			t.Error("Config file still exists after delete")
+		}
+	})
+}
+
+func TestGetConfigManager(t *testing.T) {
+	originalHome := os.Getenv("HOME")
+	defer func() {
+		os.Setenv("HOME", originalHome)
+	}()
+
+	testHome := "/test/home"
+	os.Setenv("HOME", testHome)
+
+	cm := GetConfigManager()
+	if cm == nil {
+		t.Fatal("GetConfigManager returned nil")
+	}
+
+	cm2 := GetConfigManager()
+	if cm != cm2 {
+		t.Error("GetConfigManager did not return singleton instance")
+	}
+}

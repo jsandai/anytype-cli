@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+
 	"github.com/anyproto/anytype-cli/core/config"
 )
 

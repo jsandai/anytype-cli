@@ -72,11 +72,7 @@ func (p *Program) run() {
 	defer p.wg.Done()
 	defer close(p.startCh)
 
-	grpcAddr := config.DefaultBindAddress + ":" + config.GRPCPort
-	grpcWebAddr := config.DefaultBindAddress + ":" + config.GRPCWebPort
-
-	// Start the server
-	if err := p.server.Start(grpcAddr, grpcWebAddr); err != nil {
+	if err := p.server.Start(config.DefaultGRPCAddress, config.DefaultGRPCWebAddress); err != nil {
 		p.startErr = err
 		return
 	}

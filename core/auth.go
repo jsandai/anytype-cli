@@ -150,6 +150,19 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	return nil
 }
 
+func ValidateMnemonic(mnemonic string) error {
+	if mnemonic == "" {
+		return fmt.Errorf("mnemonic cannot be empty")
+	}
+
+	words := strings.Fields(mnemonic)
+	if len(words) != 12 {
+		return fmt.Errorf("mnemonic must be exactly 12 words, got %d", len(words))
+	}
+
+	return nil
+}
+
 func Login(mnemonic, rootPath, apiAddr string) error {
 	usedStoredMnemonic := false
 	if mnemonic == "" {
@@ -166,8 +179,8 @@ func Login(mnemonic, rootPath, apiAddr string) error {
 		}
 	}
 
-	if len(strings.Split(mnemonic, " ")) != 12 {
-		return fmt.Errorf("mnemonic must be 12 words")
+	if err := ValidateMnemonic(mnemonic); err != nil {
+		return err
 	}
 
 	err := LoginAccount(mnemonic, rootPath, apiAddr)
@@ -187,7 +200,6 @@ func Login(mnemonic, rootPath, apiAddr string) error {
 }
 
 func Logout() error {
-	// Need to get token for WalletCloseSession request parameter
 	token, err := GetStoredToken()
 	if err != nil {
 		return fmt.Errorf("failed to get stored token: %w", err)

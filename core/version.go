@@ -25,7 +25,7 @@ func GetVersionVerbose() string {
 	if buildTime == "" {
 		buildTime = "unknown"
 	}
-	return fmt.Sprintf("Anytype CLI %s\nCommit: %s\nBuilt: %s\nGo: %s\nOS/Arch: %s/%s\nURL: %s",
+	return fmt.Sprintf("anytype-cli %s\nCommit: %s\nBuilt: %s\nGo: %s\nOS/Arch: %s/%s\nURL: %s",
 		GetVersion(), commit, buildTime, runtime.Version(), runtime.GOOS, runtime.GOARCH, GetReleaseURL())
 }
 

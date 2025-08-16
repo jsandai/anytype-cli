@@ -213,8 +213,7 @@ func NewConfigCmd() *cobra.Command {
 
 ### Testing Strategy
 - **Unit Tests**: Test individual functions and logic in isolation
-- **Command Tests**: Test Cobra command execution with mocked dependencies
-- **Test Helpers**: Common test utilities in `testutil/` package
-- **Mocking**: Use testify/mock for external dependencies
-- **Focus on Logic**: Tests focus on business logic, not structure
+- **Command Tests**: Test Cobra command execution and flags
+- **Simple Tests**: Keep tests minimal and focused on real logic
 - **Test Files**: Follow Go convention with `*_test.go` in same package
+- **Table-driven tests**: Use for testing multiple scenarios

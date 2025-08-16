@@ -3,6 +3,7 @@ package config
 const (
 	// Default addresses
 	DefaultBindAddress = "0.0.0.0"
+	LocalhostIP        = "127.0.0.1"
 
 	// Port configuration
 	GRPCPort    = "31007"
@@ -10,8 +11,8 @@ const (
 	APIPort     = "31009"
 
 	// Full addresses
-	DefaultGRPCAddress    = DefaultBindAddress + ":" + GRPCPort
-	DefaultGRPCWebAddress = DefaultBindAddress + ":" + GRPCWebPort
+	DefaultGRPCAddress    = LocalhostIP + ":" + GRPCPort
+	DefaultGRPCWebAddress = LocalhostIP + ":" + GRPCWebPort
 	DefaultAPIAddress     = DefaultBindAddress + ":" + APIPort
 
 	// URLs
@@ -22,9 +23,6 @@ const (
 	GitHubCommitURL  = GitHubBaseURL + "/commit/"
 	GitHubReleaseURL = GitHubBaseURL + "/releases/tag/"
 
-	// Environment variable names
-	EnvGRPCAddr    = "ANYTYPE_GRPC_ADDR"
-	EnvGRPCWebAddr = "ANYTYPE_GRPCWEB_ADDR"
-
+	// Anytype network address
 	AnytypeNetworkAddress = "N83gJpVd9MuNRZAuJLZ7LiMntTThhPc6DtzWWVjb1M3PouVU"
 )
