@@ -1,23 +1,8 @@
 # Anytype CLI
 
-A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). This CLI includes an embedded gRPC server from [anytype-heart](https://github.com/anyproto/anytype-heart), making it a complete, self-contained solution for developers to work with Anytype.
-
-## Quick Start
-
-```bash
-# Build the CLI (includes embedded server)
-make build
-
-# Install the CLI
-make install
-
-# Run the Anytype server
-anytype serve
-```
+A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). This CLI embeds [anytype-heart](https://github.com/anyproto/anytype-heart) as the server, making it a complete, self-contained solution for developers to work with a headless Anytype instance.
 
 ## Installation
-
-### Quick Install (Recommended)
 
 Install the latest release with a single command:
 
@@ -25,36 +10,21 @@ Install the latest release with a single command:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/anyproto/anytype-cli/HEAD/install.sh)"
 ```
 
-### Build from Source
-
-#### Prerequisites
-
-- Go 1.20 or later
-- Git
-- Make
-- C++ compiler (for tantivy library)
-
-#### Build and Install
+## Quick Start
 
 ```bash
-# Build only (automatically downloads tantivy library)
-make build
+# Run the Anytype server
+anytype serve
 
-# Build and install system-wide (may require sudo)
-make install
+# Or install as a system service
+anytype service install
+anytype service start
 
-# Build and install to ~/.local/bin (no sudo required)
-make install-local
-```
+# Authenticate with your account
+anytype auth login
 
-### Uninstall
-
-```bash
-# Remove system-wide installation
-make uninstall
-
-# Remove user-local installation
-make uninstall-local
+# List your spaces
+anytype space list
 ```
 
 ## Usage
@@ -63,27 +33,28 @@ make uninstall-local
 anytype <command> <subcommand> [flags]
 
 Commands:
-  auth        Authenticate with Anytype
-  serve       Run the Anytype server
-  service     Manage Anytype as a system service
-  shell       Start the Anytype interactive shell
+  auth        Manage authentication and accounts
+  serve       Run anytype in foreground
+  service     Manage anytype as a system service
+  shell       Start interactive shell mode
   space       Manage spaces
-  update      Update anytype CLI to the latest version
+  update      Update to the latest version
   version     Show version information
 
 Examples:
-  anytype serve                     # Run server in foreground
+  anytype serve                     # Run in foreground
   anytype service install           # Install as system service
   anytype service start             # Start the service
-  anytype auth login                # Login with mnemonic
-  anytype space list                # List available spaces
+  anytype auth login                # Log in to your account
+  anytype auth create               # Create a new account
+  anytype space list                # List all available spaces
 
 Use "anytype <command> --help" for more information about a command.
 ```
 
 ### Running the Server
 
-The CLI includes an embedded gRPC server that can be run in two ways:
+The CLI embeds anytype-heart as the server that can be run in two ways:
 
 #### 1. Interactive Mode (for development)
 ```bash
@@ -116,32 +87,50 @@ The service management works across platforms:
 
 ### Authentication
 
-After starting the server, authenticate with your Anytype account:
+Manage your Anytype account and authentication:
 
 ```bash
-# Login with mnemonic
+# Create a new account
+anytype auth create
+
+# Log in to your account
 anytype auth login
 
 # Check authentication status
 anytype auth status
 
-# Logout
+# Log out and clear stored credentials
 anytype auth logout
 ```
 
 ### API Keys
 
-Generate API keys for programmatic access:
+Manage API keys for programmatic access:
 
 ```bash
 # Create a new API key
 anytype auth apikey create --name "my-app"
 
-# List API keys
+# List all API keys
 anytype auth apikey list
 
 # Revoke an API key
 anytype auth apikey revoke <key-id>
+```
+
+### Space Management
+
+Work with Anytype spaces:
+
+```bash
+# List all available spaces
+anytype space list
+
+# Join a space
+anytype space join <space-id>
+
+# Leave a space
+anytype space leave <space-id>
 ```
 
 ## Development
@@ -157,7 +146,7 @@ anytype-cli/
 │   ├── space/        # Space management
 │   └── ...
 ├── core/             # Core business logic
-│   ├── grpcserver/   # Embedded gRPC server
+│   ├── grpcserver/   # Embedded gRPC server (anytype-heart)
 │   ├── serviceprogram/ # Service implementation
 │   └── ...
 └── dist/             # Build output
@@ -165,19 +154,47 @@ anytype-cli/
 
 ### Building from Source
 
+#### Prerequisites
+
+- Go 1.20 or later
+- Git
+- Make
+- C compiler (gcc or clang, for CGO)
+
+#### Build Commands
+
 ```bash
 # Clone the repository
 git clone https://github.com/anyproto/anytype-cli.git
 cd anytype-cli
 
-# Build (CGO is automatically enabled for tantivy)
+# Build the CLI (automatically downloads tantivy library)
 make build
+
+# Install system-wide (may require sudo)
+make install
+
+# Install to ~/.local/bin (no sudo required)
+make install-local
 
 # Run tests
 go test ./...
 
 # Run linting
 make lint
+
+# Cross-compile for all platforms
+make cross-compile
+```
+
+#### Uninstall
+
+```bash
+# Remove system-wide installation
+make uninstall
+
+# Remove user-local installation
+make uninstall-local
 ```
 
 ## Contribution
