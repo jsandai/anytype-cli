@@ -10,7 +10,6 @@ import (
 
 	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
-	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 	"github.com/cheggaaa/mb/v3"
 
 	"github.com/anyproto/anytype-cli/core/output"
@@ -114,29 +113,6 @@ func WaitForAccountId(er *EventReceiver) (string, error) {
 	}
 
 	return msg.GetAccountShow().GetAccount().Id, nil
-}
-
-// WaitForJoinRequestEvent waits for a join request for the specified space
-func WaitForJoinRequestEvent(er *EventReceiver, spaceId string) (*model.NotificationRequestToJoin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-
-	// Create a condition that filters for join request events
-	cond := er.queue.NewCond().WithFilter(func(msg *pb.EventMessage) bool {
-		if ns := msg.GetNotificationSend(); ns != nil && ns.Notification != nil {
-			if req := ns.Notification.GetRequestToJoin(); req != nil {
-				return req.SpaceId == spaceId
-			}
-		}
-		return false
-	})
-
-	msg, err := cond.WaitOne(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("timeout waiting for join request: %w", err)
-	}
-
-	return msg.GetNotificationSend().Notification.GetRequestToJoin(), nil
 }
 
 // WaitOne waits for any single event with optional timeout
