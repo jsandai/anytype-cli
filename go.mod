@@ -5,7 +5,7 @@ go 1.23.10
 toolchain go1.24.0
 
 require (
-	github.com/anyproto/any-sync v0.28.0
+	github.com/anyproto/any-sync v0.9.3-0.20250814130126-36509ffa0ca6
 	github.com/anyproto/anytype-heart v0.42.4
 	github.com/cheggaaa/mb/v3 v3.0.2
 	github.com/chzyer/readline v1.5.1
@@ -131,7 +131,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ipfs/bbloom v0.0.4 // indirect
-	github.com/ipfs/boxo v0.33.1 // indirect
+	github.com/ipfs/boxo v0.32.0 // indirect
 	github.com/ipfs/go-bitfield v1.1.0 // indirect
 	github.com/ipfs/go-block-format v0.2.2 // indirect
 	github.com/ipfs/go-cid v0.5.0 // indirect
@@ -267,9 +267,9 @@ require (
 
 replace (
 	github.com/JohannesKaufmann/html-to-markdown => github.com/anyproto/html-to-markdown v0.0.0-20231025221133-830bf0a6f139
-	github.com/anyproto/any-sync => github.com/anyproto/any-sync v0.9.8
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.1
 	github.com/btcsuite/btcutil => github.com/btcsuite/btcd/btcutil v1.1.5
+	github.com/ipfs/boxo => github.com/ipfs/boxo v0.29.1
 	github.com/libp2p/zeroconf/v2 => github.com/anyproto/zeroconf/v2 v2.2.1-0.20240228113933-f90a5cc4439d
 	gopkg.in/Graylog2/go-gelf.v2 => github.com/anyproto/go-gelf v0.0.0-20210418191311-774bd5b016e7
 )
