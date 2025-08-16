@@ -36,7 +36,9 @@ func TestGetStoredTechSpaceId(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, ".anytype", "config.json")
-	os.MkdirAll(filepath.Dir(configPath), 0755)
+	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+		t.Fatalf("Failed to create config directory: %v", err)
+	}
 	testConfig := `{"techSpaceId":"tech-space-789"}`
 	if err := os.WriteFile(configPath, []byte(testConfig), 0644); err != nil {
 		t.Fatalf("Failed to write test config: %v", err)
@@ -60,7 +62,9 @@ func TestLoadStoredConfig(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, ".anytype", "config.json")
-	os.MkdirAll(filepath.Dir(configPath), 0755)
+	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+		t.Fatalf("Failed to create config directory: %v", err)
+	}
 	testConfig := `{
 		"accountId":"test-account-123",
 		"techSpaceId":"tech-space-789"
