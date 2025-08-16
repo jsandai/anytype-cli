@@ -56,7 +56,7 @@ func NewStatusCmd() *cobra.Command {
 			}
 
 			if !hasMnemonic && !hasToken && accountID == "" {
-				output.Print("Not authenticated. Run 'anytype auth login' to authenticate.")
+				output.Print("Not authenticated. Run 'anytype auth login' to authenticate or 'anytype auth create' to create a new account.")
 				return nil
 			}
 
