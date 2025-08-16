@@ -5,6 +5,7 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,8 +14,8 @@ import (
 
 	"github.com/anyproto/any-sync/app"
 	"github.com/anyproto/anytype-heart/core/api"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 
@@ -135,7 +136,7 @@ func (s *Server) Start(grpcAddr, grpcWebAddr string) error {
 	go func() {
 		// Print the required message for JS client compatibility
 		fmt.Printf("gRPC Web proxy started at: %s\n", s.webListener.Addr())
-		if err := s.webServer.Serve(s.webListener); err != nil && err != http.ErrServerClosed {
+		if err := s.webServer.Serve(s.webListener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Errorf("gRPC-Web server error: %v", err)
 		}
 	}()

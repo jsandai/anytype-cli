@@ -18,7 +18,9 @@ func TestSuccess(t *testing.T) {
 	os.Stdout = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	if _, err := buf.ReadFrom(r); err != nil {
+		t.Fatalf("Failed to read from pipe: %v", err)
+	}
 	output := buf.String()
 
 	if !strings.Contains(output, "✓") {
@@ -40,7 +42,9 @@ func TestWarning(t *testing.T) {
 	os.Stderr = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	if _, err := buf.ReadFrom(r); err != nil {
+		t.Fatalf("Failed to read from pipe: %v", err)
+	}
 	output := buf.String()
 
 	if !strings.Contains(output, "⚠") {
@@ -74,7 +78,9 @@ func TestPrint(t *testing.T) {
 	os.Stdout = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	if _, err := buf.ReadFrom(r); err != nil {
+		t.Fatalf("Failed to read from pipe: %v", err)
+	}
 	output := buf.String()
 
 	if !strings.Contains(output, "test 123 message") {
