@@ -1,7 +1,9 @@
 package create
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/anyproto/anytype-cli/core"
@@ -22,7 +24,14 @@ func NewCreateCmd() *cobra.Command {
 		Long:  "Create a new Anytype account with a generated mnemonic phrase. The mnemonic is your master key for account recovery.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
-				return output.Error("account name is required")
+				output.Print("Enter account name: ")
+				reader := bufio.NewReader(os.Stdin)
+				name, _ = reader.ReadString('\n')
+				name = strings.TrimSpace(name)
+
+				if name == "" {
+					return output.Error("account name is required")
+				}
 			}
 
 			mnemonic, accountID, err := core.CreateWallet(name, rootPath, apiAddr)
@@ -57,8 +66,7 @@ func NewCreateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&name, "name", "", "Account name (required)")
-	_ = cmd.MarkFlagRequired("name")
+	cmd.Flags().StringVar(&name, "name", "", "Account name")
 	cmd.Flags().StringVar(&rootPath, "root-path", "", "Custom root path for storing account data")
 	cmd.Flags().StringVar(&apiAddr, "api-addr", "", fmt.Sprintf("Custom API address (default: %s)", config.DefaultAPIAddress))
 
