@@ -9,8 +9,8 @@ import (
 )
 
 type Config struct {
-	AccountID   string `json:"accountId,omitempty"`
-	TechSpaceID string `json:"techSpaceId,omitempty"`
+	AccountId   string `json:"accountId,omitempty"`
+	TechSpaceId string `json:"techSpaceId,omitempty"`
 }
 
 var (
@@ -102,17 +102,17 @@ func (cm *ConfigManager) Get() *Config {
 	return &configCopy
 }
 
-func (cm *ConfigManager) SetAccountID(accountID string) error {
+func (cm *ConfigManager) SetAccountId(accountId string) error {
 	cm.mu.Lock()
-	cm.config.AccountID = accountID
+	cm.config.AccountId = accountId
 	cm.mu.Unlock()
 
 	return cm.Save()
 }
 
-func (cm *ConfigManager) SetTechSpaceID(techSpaceID string) error {
+func (cm *ConfigManager) SetTechSpaceId(techSpaceId string) error {
 	cm.mu.Lock()
-	cm.config.TechSpaceID = techSpaceID
+	cm.config.TechSpaceId = techSpaceId
 	cm.mu.Unlock()
 
 	return cm.Save()

@@ -37,7 +37,7 @@ func NewListCmd() *cobra.Command {
 					name = name[:25] + "..."
 				}
 
-				output.Info("%-75s %-30s %s", space.SpaceID, name, status)
+				output.Info("%-75s %-30s %s", space.SpaceId, name, status)
 			}
 
 			return nil

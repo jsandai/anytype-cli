@@ -34,7 +34,7 @@ func NewCreateCmd() *cobra.Command {
 				}
 			}
 
-			mnemonic, accountID, err := core.CreateWallet(name, rootPath, apiAddr)
+			mnemonic, accountId, err := core.CreateWallet(name, rootPath, apiAddr)
 			if err != nil {
 				return output.Error("failed to create account: %w", err)
 			}
@@ -56,7 +56,7 @@ func NewCreateCmd() *cobra.Command {
 			output.Print("")
 			output.Print("📋 Account Details:")
 			output.Print("   Name: %s", name)
-			output.Print("   ID: %s", accountID)
+			output.Print("   Id: %s", accountId)
 
 			output.Print("")
 			output.Success("You are now logged in to your new account.")

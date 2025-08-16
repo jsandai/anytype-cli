@@ -33,7 +33,7 @@ func NewStatusCmd() *cobra.Command {
 			configMgr := config.GetConfigManager()
 			_ = configMgr.Load()
 			cfg := configMgr.Get()
-			accountID := cfg.AccountID
+			accountId := cfg.AccountId
 
 			serverRunning := false
 			err := core.GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
@@ -49,21 +49,21 @@ func NewStatusCmd() *cobra.Command {
 			// Display status based on priority: server -> credentials -> login
 			if !serverRunning {
 				output.Print("Server is not running. Run 'anytype serve' to start the server.")
-				if hasMnemonic || hasToken || accountID != "" {
+				if hasMnemonic || hasToken || accountId != "" {
 					output.Print("Credentials are stored in keychain.")
 				}
 				return nil
 			}
 
-			if !hasMnemonic && !hasToken && accountID == "" {
+			if !hasMnemonic && !hasToken && accountId == "" {
 				output.Print("Not authenticated. Run 'anytype auth login' to authenticate or 'anytype auth create' to create a new account.")
 				return nil
 			}
 
 			output.Print("\033[1manytype\033[0m")
 
-			if isLoggedIn && accountID != "" {
-				output.Print("  ✓ Logged in to account \033[1m%s\033[0m (keychain)", accountID)
+			if isLoggedIn && accountId != "" {
+				output.Print("  ✓ Logged in to account \033[1m%s\033[0m (keychain)", accountId)
 			} else if hasToken || hasMnemonic {
 				output.Print("  ✗ Not logged in (credentials stored in keychain)")
 				if !isLoggedIn && hasToken {

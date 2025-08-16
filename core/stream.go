@@ -98,8 +98,8 @@ func (er *EventReceiver) receiveLoop(ctx context.Context) {
 	}
 }
 
-// WaitForAccountID waits for an accountShow event and returns the account ID
-func WaitForAccountID(er *EventReceiver) (string, error) {
+// WaitForAccountId waits for an accountShow event and returns the account Id
+func WaitForAccountId(er *EventReceiver) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -110,14 +110,14 @@ func WaitForAccountID(er *EventReceiver) (string, error) {
 
 	msg, err := cond.WaitOne(ctx)
 	if err != nil {
-		return "", fmt.Errorf("timeout waiting for account ID: %w", err)
+		return "", fmt.Errorf("timeout waiting for account Id: %w", err)
 	}
 
 	return msg.GetAccountShow().GetAccount().Id, nil
 }
 
 // WaitForJoinRequestEvent waits for a join request for the specified space
-func WaitForJoinRequestEvent(er *EventReceiver, spaceID string) (*model.NotificationRequestToJoin, error) {
+func WaitForJoinRequestEvent(er *EventReceiver, spaceId string) (*model.NotificationRequestToJoin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -125,7 +125,7 @@ func WaitForJoinRequestEvent(er *EventReceiver, spaceID string) (*model.Notifica
 	cond := er.queue.NewCond().WithFilter(func(msg *pb.EventMessage) bool {
 		if ns := msg.GetNotificationSend(); ns != nil && ns.Notification != nil {
 			if req := ns.Notification.GetRequestToJoin(); req != nil {
-				return req.SpaceId == spaceID
+				return req.SpaceId == spaceId
 			}
 		}
 		return false

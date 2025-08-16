@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGetStoredAccountID(t *testing.T) {
+func TestGetStoredAccountId(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "anytype-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
@@ -22,13 +22,13 @@ func TestGetStoredAccountID(t *testing.T) {
 	os.Setenv("HOME", tempDir)
 	defer os.Unsetenv("HOME")
 
-	accountID, err := GetStoredAccountID()
-	if err == nil && accountID != "" {
-		t.Logf("GetStoredAccountID() = %v", accountID)
+	accountId, err := GetStoredAccountId()
+	if err == nil && accountId != "" {
+		t.Logf("GetStoredAccountId() = %v", accountId)
 	}
 }
 
-func TestGetStoredTechSpaceID(t *testing.T) {
+func TestGetStoredTechSpaceId(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "anytype-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
@@ -46,9 +46,9 @@ func TestGetStoredTechSpaceID(t *testing.T) {
 	os.Setenv("HOME", tempDir)
 	defer os.Setenv("HOME", originalHome)
 
-	techSpaceID, err := GetStoredTechSpaceID()
-	if err == nil && techSpaceID != "" {
-		t.Logf("GetStoredTechSpaceID() = %v", techSpaceID)
+	techSpaceId, err := GetStoredTechSpaceId()
+	if err == nil && techSpaceId != "" {
+		t.Logf("GetStoredTechSpaceId() = %v", techSpaceId)
 	}
 }
 
@@ -75,9 +75,9 @@ func TestLoadStoredConfig(t *testing.T) {
 
 	cfg, err := LoadStoredConfig()
 	if err == nil && cfg != nil {
-		if cfg.AccountID != "" || cfg.TechSpaceID != "" {
-			t.Logf("LoadStoredConfig() loaded config with AccountID=%v, TechSpaceID=%v",
-				cfg.AccountID, cfg.TechSpaceID)
+		if cfg.AccountId != "" || cfg.TechSpaceId != "" {
+			t.Logf("LoadStoredConfig() loaded config with AccountId=%v, TechSpaceId=%v",
+				cfg.AccountId, cfg.TechSpaceId)
 		}
 	}
 }

@@ -6,34 +6,34 @@ import (
 	"github.com/anyproto/anytype-cli/core/config"
 )
 
-// GetStoredAccountID retrieves the stored account ID from config
-func GetStoredAccountID() (string, error) {
+// GetStoredAccountId retrieves the stored account Id from config
+func GetStoredAccountId() (string, error) {
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Load(); err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
 
 	cfg := configMgr.Get()
-	if cfg.AccountID == "" {
-		return "", fmt.Errorf("no account ID found in config")
+	if cfg.AccountId == "" {
+		return "", fmt.Errorf("no account Id found in config")
 	}
 
-	return cfg.AccountID, nil
+	return cfg.AccountId, nil
 }
 
-// GetStoredTechSpaceID retrieves the stored tech space ID from config
-func GetStoredTechSpaceID() (string, error) {
+// GetStoredTechSpaceId retrieves the stored tech space Id from config
+func GetStoredTechSpaceId() (string, error) {
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Load(); err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
 
 	cfg := configMgr.Get()
-	if cfg.TechSpaceID == "" {
-		return "", fmt.Errorf("no tech space ID found in config")
+	if cfg.TechSpaceId == "" {
+		return "", fmt.Errorf("no tech space Id found in config")
 	}
 
-	return cfg.TechSpaceID, nil
+	return cfg.TechSpaceId, nil
 }
 
 // LoadStoredConfig loads and returns the entire config

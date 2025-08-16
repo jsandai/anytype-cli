@@ -217,3 +217,8 @@ func NewConfigCmd() *cobra.Command {
 - **Simple Tests**: Keep tests minimal and focused on real logic
 - **Test Files**: Follow Go convention with `*_test.go` in same package
 - **Table-driven tests**: Use for testing multiple scenarios
+
+## Code Style Guidelines
+
+### Naming Conventions
+- **Use `Id` instead of `ID`**: Throughout the codebase, prefer `Id` over `ID` for consistency (e.g., `UserId`, `SpaceId`, `ObjectId`)

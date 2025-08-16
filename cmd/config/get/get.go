@@ -20,24 +20,24 @@ func NewGetCmd() *cobra.Command {
 			cfg := configMgr.Get()
 
 			if len(args) == 0 {
-				if cfg.AccountID != "" {
-					output.Info("accountId: %s", cfg.AccountID)
+				if cfg.AccountId != "" {
+					output.Info("accountId: %s", cfg.AccountId)
 				}
-				if cfg.TechSpaceID != "" {
-					output.Info("techSpaceId: %s", cfg.TechSpaceID)
+				if cfg.TechSpaceId != "" {
+					output.Info("techSpaceId: %s", cfg.TechSpaceId)
 				}
 				return nil
 			}
 
 			key := args[0]
 			switch key {
-			case "accountId", "accountID":
-				if cfg.AccountID != "" {
-					output.Info(cfg.AccountID)
+			case "accountId":
+				if cfg.AccountId != "" {
+					output.Info(cfg.AccountId)
 				}
-			case "techSpaceId", "techSpaceID":
-				if cfg.TechSpaceID != "" {
-					output.Info(cfg.TechSpaceID)
+			case "techSpaceId":
+				if cfg.TechSpaceId != "" {
+					output.Info(cfg.TechSpaceId)
 				}
 			default:
 				return output.Error("unknown config key: %s", key)

@@ -11,7 +11,7 @@ func NewRevokeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "revoke <id>",
 		Short: "Revoke an API key",
-		Long:  "Revoke an API key by its ID",
+		Long:  "Revoke an API key by its Id",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			appId := args[0]
@@ -21,7 +21,7 @@ func NewRevokeCmd() *cobra.Command {
 				return output.Error("failed to revoke API key: %w", err)
 			}
 
-			output.Success("API key with ID '%s' revoked successfully", appId)
+			output.Success("API key with Id '%s' revoked successfully", appId)
 			return nil
 		},
 	}

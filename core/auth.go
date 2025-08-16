@@ -109,16 +109,16 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 		return err
 	}
 
-	accountID, err := WaitForAccountID(er)
+	accountId, err := WaitForAccountId(er)
 	if err != nil {
-		return fmt.Errorf("error waiting for account ID: %w", err)
+		return fmt.Errorf("error waiting for account Id: %w", err)
 	}
-	output.Info("Account ID: %s", accountID)
+	output.Info("Account Id: %s", accountId)
 
-	var techSpaceID string
+	var techSpaceId string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
-			Id:                accountID,
+			Id:                accountId,
 			JsonApiListenAddr: apiAddr,
 			RootPath:          rootPath,
 		})
@@ -126,7 +126,7 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 			return fmt.Errorf("failed to select account: %w", err)
 		}
 		if resp.Account != nil && resp.Account.Info != nil {
-			techSpaceID = resp.Account.Info.TechSpaceId
+			techSpaceId = resp.Account.Info.TechSpaceId
 		}
 		return nil
 	})
@@ -138,12 +138,12 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	if err := configMgr.Load(); err != nil {
 		output.Warning("failed to load config: %v", err)
 	}
-	if err := configMgr.SetAccountID(accountID); err != nil {
-		output.Warning("failed to save account ID: %v", err)
+	if err := configMgr.SetAccountId(accountId); err != nil {
+		output.Warning("failed to save account Id: %v", err)
 	}
-	if techSpaceID != "" {
-		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
-			output.Warning("failed to save tech space ID: %v", err)
+	if techSpaceId != "" {
+		if err := configMgr.SetTechSpaceId(techSpaceId); err != nil {
+			output.Warning("failed to save tech space Id: %v", err)
 		}
 	}
 
@@ -249,7 +249,7 @@ func Logout() error {
 	return nil
 }
 
-// CreateWallet creates a new wallet with the given root path and returns the mnemonic and account ID
+// CreateWallet creates a new wallet with the given root path and returns the mnemonic and account Id
 func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 	if rootPath == "" {
 		rootPath = getDefaultDataPath()
@@ -305,7 +305,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		return "", "", fmt.Errorf("failed to start event listener: %w", err)
 	}
 
-	var accountID string
+	var accountId string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.AccountCreate(ctx, &pb.RpcAccountCreateRequest{
 			Name:              name,
@@ -315,17 +315,17 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		if err != nil {
 			return fmt.Errorf("account creation failed: %w", err)
 		}
-		accountID = resp.Account.Id
+		accountId = resp.Account.Id
 		return nil
 	})
 	if err != nil {
 		return "", "", err
 	}
 
-	var techSpaceID string
+	var techSpaceId string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
-			Id:                accountID,
+			Id:                accountId,
 			JsonApiListenAddr: apiAddr,
 			RootPath:          rootPath,
 		})
@@ -333,7 +333,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 			return fmt.Errorf("failed to select account: %w", err)
 		}
 		if resp.Account != nil && resp.Account.Info != nil {
-			techSpaceID = resp.Account.Info.TechSpaceId
+			techSpaceId = resp.Account.Info.TechSpaceId
 		}
 		return nil
 	})
@@ -347,14 +347,14 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 	if err := configMgr.Load(); err != nil {
 		output.Warning("failed to load config: %v", err)
 	}
-	if err := configMgr.SetAccountID(accountID); err != nil {
-		output.Warning("failed to save account ID: %v", err)
+	if err := configMgr.SetAccountId(accountId); err != nil {
+		output.Warning("failed to save account Id: %v", err)
 	}
-	if techSpaceID != "" {
-		if err := configMgr.SetTechSpaceID(techSpaceID); err != nil {
-			output.Warning("failed to save tech space ID: %v", err)
+	if techSpaceId != "" {
+		if err := configMgr.SetTechSpaceId(techSpaceId); err != nil {
+			output.Warning("failed to save tech space Id: %v", err)
 		}
 	}
 
-	return mnemonic, accountID, nil
+	return mnemonic, accountId, nil
 }

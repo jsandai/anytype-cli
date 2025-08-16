@@ -14,13 +14,13 @@ func NewLeaveCmd() *cobra.Command {
 		Long:  "Leave a space and stop sharing it",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			spaceID := args[0]
+			spaceId := args[0]
 
-			if err := core.LeaveSpace(spaceID); err != nil {
+			if err := core.LeaveSpace(spaceId); err != nil {
 				return output.Error("failed to leave space: %w", err)
 			}
 
-			output.Success("Successfully sent leave request for space with ID: %s", spaceID)
+			output.Success("Successfully sent leave request for space with Id: %s", spaceId)
 			return nil
 		},
 	}

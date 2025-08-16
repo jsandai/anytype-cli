@@ -26,8 +26,8 @@ func TestConfigManager(t *testing.T) {
 
 		configPath := filepath.Join(tempDir, "config.json")
 		testConfig := &Config{
-			AccountID:   "test-account-123",
-			TechSpaceID: "test-tech-space-789",
+			AccountId:   "test-account-123",
+			TechSpaceId: "test-tech-space-789",
 		}
 
 		cm := &ConfigManager{
@@ -55,11 +55,11 @@ func TestConfigManager(t *testing.T) {
 		}
 
 		cfg := cm2.Get()
-		if cfg.AccountID != testConfig.AccountID {
-			t.Errorf("AccountID = %v, want %v", cfg.AccountID, testConfig.AccountID)
+		if cfg.AccountId != testConfig.AccountId {
+			t.Errorf("AccountId = %v, want %v", cfg.AccountId, testConfig.AccountId)
 		}
-		if cfg.TechSpaceID != testConfig.TechSpaceID {
-			t.Errorf("TechSpaceID = %v, want %v", cfg.TechSpaceID, testConfig.TechSpaceID)
+		if cfg.TechSpaceId != testConfig.TechSpaceId {
+			t.Errorf("TechSpaceId = %v, want %v", cfg.TechSpaceId, testConfig.TechSpaceId)
 		}
 	})
 
@@ -72,7 +72,7 @@ func TestConfigManager(t *testing.T) {
 
 		configPath := filepath.Join(tempDir, "config.json")
 		cm := &ConfigManager{
-			config:   &Config{AccountID: "test"},
+			config:   &Config{AccountId: "test"},
 			filePath: configPath,
 		}
 

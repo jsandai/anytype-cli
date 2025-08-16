@@ -11,10 +11,10 @@ import (
 	"github.com/anyproto/anytype-heart/util/pbtypes"
 )
 
-func ApproveJoinRequest(spaceID, identity string, permissions model.ParticipantPermissions) error {
+func ApproveJoinRequest(spaceId, identity string, permissions model.ParticipantPermissions) error {
 	return GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		req := &pb.RpcSpaceRequestApproveRequest{
-			SpaceId:     spaceID,
+			SpaceId:     spaceId,
 			Identity:    identity,
 			Permissions: permissions,
 		}
@@ -26,12 +26,12 @@ func ApproveJoinRequest(spaceID, identity string, permissions model.ParticipantP
 	})
 }
 
-func JoinSpace(networkID, spaceID, inviteCID, inviteFileKey string) error {
+func JoinSpace(networkId, spaceId, inviteCId, inviteFileKey string) error {
 	return GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		req := &pb.RpcSpaceJoinRequest{
-			NetworkId:     networkID,
-			SpaceId:       spaceID,
-			InviteCid:     inviteCID,
+			NetworkId:     networkId,
+			SpaceId:       spaceId,
+			InviteCid:     inviteCId,
 			InviteFileKey: inviteFileKey,
 		}
 		_, err := client.SpaceJoin(ctx, req)
@@ -42,10 +42,10 @@ func JoinSpace(networkID, spaceID, inviteCID, inviteFileKey string) error {
 	})
 }
 
-func LeaveSpace(spaceID string) error {
+func LeaveSpace(spaceId string) error {
 	return GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		req := &pb.RpcSpaceDeleteRequest{
-			SpaceId: spaceID,
+			SpaceId: spaceId,
 		}
 		_, err := client.SpaceDelete(ctx, req)
 		if err != nil {
@@ -55,59 +55,43 @@ func LeaveSpace(spaceID string) error {
 	})
 }
 
-type SpaceInviteInfo struct {
-	SpaceID           string
-	SpaceName         string
-	SpaceIconCID      string
-	CreatorName       string
-	IsGuestUserInvite bool
-	InviteType        model.InviteType
-}
-
-func ViewSpaceInvite(inviteCID, inviteFileKey string) (*SpaceInviteInfo, error) {
-	var info *SpaceInviteInfo
+func ViewSpaceInvite(inviteCId, inviteFileKey string) (*pb.RpcSpaceInviteViewResponse, error) {
+	var resp *pb.RpcSpaceInviteViewResponse
 	err := GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		req := &pb.RpcSpaceInviteViewRequest{
-			InviteCid:     inviteCID,
+			InviteCid:     inviteCId,
 			InviteFileKey: inviteFileKey,
 		}
-		resp, err := client.SpaceInviteView(ctx, req)
+		var err error
+		resp, err = client.SpaceInviteView(ctx, req)
 		if err != nil {
 			return fmt.Errorf("failed to view space invite: %w", err)
 		}
 		if resp.Error != nil && resp.Error.Code != pb.RpcSpaceInviteViewResponseError_NULL {
 			return fmt.Errorf("space invite view error: %s", resp.Error.Description)
 		}
-		info = &SpaceInviteInfo{
-			SpaceID:           resp.SpaceId,
-			SpaceName:         resp.SpaceName,
-			SpaceIconCID:      resp.SpaceIconCid,
-			CreatorName:       resp.CreatorName,
-			IsGuestUserInvite: resp.IsGuestUserInvite,
-			InviteType:        resp.InviteType,
-		}
 		return nil
 	})
-	return info, err
+	return resp, err
 }
 
 type SpaceListItem struct {
-	SpaceID string
+	SpaceId string
 	Name    string
 	Status  model.SpaceStatus
 }
 
 // ListSpaces returns a list of all available spaces
 func ListSpaces() ([]SpaceListItem, error) {
-	techSpaceID, err := GetStoredTechSpaceID()
+	techSpaceId, err := GetStoredTechSpaceId()
 	if err != nil {
-		return nil, fmt.Errorf("tech space ID not found in config - please login first: %w", err)
+		return nil, fmt.Errorf("tech space Id not found in config - please login first: %w", err)
 	}
 
 	var spaces []SpaceListItem
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		req := &pb.RpcObjectSearchRequest{
-			SpaceId: techSpaceID,
+			SpaceId: techSpaceId,
 			Filters: []*model.BlockContentDataviewFilter{
 				{
 					RelationKey: bundle.RelationKeyResolvedLayout.String(),
@@ -151,9 +135,9 @@ func ListSpaces() ([]SpaceListItem, error) {
 		for _, record := range resp.Records {
 			item := SpaceListItem{}
 
-			// Get space ID
-			if spaceIDVal := pbtypes.GetString(record, bundle.RelationKeyTargetSpaceId.String()); spaceIDVal != "" {
-				item.SpaceID = spaceIDVal
+			// Get space Id
+			if spaceIdVal := pbtypes.GetString(record, bundle.RelationKeyTargetSpaceId.String()); spaceIdVal != "" {
+				item.SpaceId = spaceIdVal
 			}
 
 			// Get name
@@ -166,7 +150,7 @@ func ListSpaces() ([]SpaceListItem, error) {
 				item.Status = model.SpaceStatus(statusVal)
 			}
 
-			if item.SpaceID != "" {
+			if item.SpaceId != "" {
 				spaces = append(spaces, item)
 			}
 		}
