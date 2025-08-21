@@ -95,18 +95,21 @@ download-tantivy: ## Download tantivy library for current platform
 ##@ Installation
 
 install: build ## Install to /usr/local/bin (may require sudo)
-	@echo "Installing Anytype CLI..."
+	@echo "Installing anytype-cli..."
 	@cp dist/anytype /usr/local/bin/anytype 2>/dev/null || sudo cp dist/anytype /usr/local/bin/anytype
-	@echo "Installed to /usr/local/bin/"
+	@ln -sf /usr/local/bin/anytype /usr/local/bin/any 2>/dev/null || sudo ln -sf /usr/local/bin/anytype /usr/local/bin/any
+	@echo "Installed to /usr/local/bin/ (available as 'anytype' and 'any')"
 	@echo ""
 	@echo "Usage:"
 	@echo "  anytype serve              # Run server in foreground"
 	@echo "  anytype service install    # Install as system service"
 
 install-local: build ## Install to ~/.local/bin (user installation)
+	@echo "Installing anytype-cli to local..."
 	@mkdir -p $$HOME/.local/bin
 	@cp dist/anytype $$HOME/.local/bin/anytype
-	@echo "Installed to $$HOME/.local/bin/"
+	@ln -sf $$HOME/.local/bin/anytype $$HOME/.local/bin/any
+	@echo "Installed to $$HOME/.local/bin/ (available as 'anytype' and 'any')"
 	@echo "Make sure $$HOME/.local/bin is in your PATH"
 	@echo ""
 	@echo "Usage:"
@@ -114,13 +117,15 @@ install-local: build ## Install to ~/.local/bin (user installation)
 	@echo "  anytype service install    # Install as system service"
 
 uninstall: ## Uninstall from /usr/local/bin
-	@echo "Uninstalling Anytype CLI..."
+	@echo "Uninstalling anytype-cli..."
 	@rm -f /usr/local/bin/anytype 2>/dev/null || sudo rm -f /usr/local/bin/anytype
+	@rm -f /usr/local/bin/any 2>/dev/null || sudo rm -f /usr/local/bin/any
 	@echo "Uninstalled from /usr/local/bin/"
 
 uninstall-local: ## Uninstall from ~/.local/bin
-	@echo "Uninstalling Anytype CLI from local..."
+	@echo "Uninstalling anytype-cli from local..."
 	@rm -f $$HOME/.local/bin/anytype
+	@rm -f $$HOME/.local/bin/any
 	@echo "Uninstalled from $$HOME/.local/bin/"
 
 ##@ Development
