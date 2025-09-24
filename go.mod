@@ -3,8 +3,8 @@ module github.com/anyproto/anytype-cli
 go 1.24.6
 
 require (
-	github.com/anyproto/any-sync v0.10.2
-	github.com/anyproto/anytype-heart v0.44.0-rc06
+	github.com/anyproto/any-sync v0.10.3-0.20250924192345-ac39daeebf86
+	github.com/anyproto/anytype-heart v0.48.18-hotfix-1.0.20250924191541-b7d0a25cfa2e
 	github.com/cheggaaa/mb/v3 v3.0.2
 	github.com/chzyer/readline v1.5.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -28,12 +28,12 @@ require (
 	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
 	github.com/alexbrainman/goissue34681 v0.0.0-20191006012335-3fc7a47baff5 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/anyproto/any-store v0.3.6 // indirect
+	github.com/anyproto/any-store v0.3.8 // indirect
 	github.com/anyproto/anytype-publish-server/publishclient v0.0.0-20250716122732-cdcfe3a126bb // indirect
 	github.com/anyproto/anytype-push-server/pushclient v0.0.0-20250801122506-553f6c085a23 // indirect
 	github.com/anyproto/go-chash v0.1.0 // indirect
 	github.com/anyproto/go-naturaldate/v2 v2.0.2-0.20230524105841-9829cfd13438 // indirect
-	github.com/anyproto/go-slip10 v1.0.0 // indirect
+	github.com/anyproto/go-slip10 v1.0.1-0.20250818123350-f910c27dd080 // indirect
 	github.com/anyproto/go-slip21 v1.0.0 // indirect
 	github.com/anyproto/go-sqlite v1.4.2-any // indirect
 	github.com/anyproto/lexid v0.0.6 // indirect
