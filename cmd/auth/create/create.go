@@ -20,8 +20,8 @@ func NewCreateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create a new account",
-		Long:  "Create a new Anytype account with a generated mnemonic phrase. The mnemonic is your master key for account recovery.",
+		Short: "Create a new bot account",
+		Long:  "Create a new Anytype bot account with a generated account key. The account key is your credential for bot authentication.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
 				output.Print("Enter account name: ")
@@ -34,33 +34,47 @@ func NewCreateCmd() *cobra.Command {
 				}
 			}
 
-			mnemonic, accountId, err := core.CreateWallet(name, rootPath, apiAddr)
+			botAccountKey, accountId, err := core.CreateBotWallet(name, rootPath, apiAddr)
 			if err != nil {
 				return output.Error("failed to create account: %w", err)
 			}
 
-			output.Success("Account created successfully!")
+			output.Success("Bot account created successfully!")
 
-			output.Warning("IMPORTANT: Save your mnemonic phrase in a secure location.")
-			output.Info("   This is the ONLY way to recover your account if you lose access.")
-
-			words := strings.Split(mnemonic, " ")
-			output.Print("")
-			output.Print("╔════════════════════════════════════════════════════════╗")
-			output.Print("║                    MNEMONIC PHRASE                     ║")
-			output.Print("╠════════════════════════════════════════════════════════╣")
-			output.Print("║  %-52s  ║", strings.Join(words[0:6], " "))
-			output.Print("║  %-52s  ║", strings.Join(words[6:12], " "))
-			output.Print("╚════════════════════════════════════════════════════════╝")
+			output.Warning("IMPORTANT: Save your bot account key in a secure location.")
+			output.Info("   This is the ONLY way to authenticate your bot account.")
 
 			output.Print("")
-			output.Print("📋 Account Details:")
+			keyLen := len(botAccountKey)
+			boxWidth := keyLen + 4 // 2 spaces padding on each side
+			if boxWidth < 24 {     // Minimum width for "BOT ACCOUNT KEY" title
+				boxWidth = 24
+			}
+
+			topBorder := "╔" + strings.Repeat("═", boxWidth) + "╗"
+			midBorder := "╠" + strings.Repeat("═", boxWidth) + "╣"
+			botBorder := "╚" + strings.Repeat("═", boxWidth) + "╝"
+
+			title := "BOT ACCOUNT KEY"
+			titlePadding := (boxWidth - len(title)) / 2
+			titleLine := "║" + strings.Repeat(" ", titlePadding) + title + strings.Repeat(" ", boxWidth-titlePadding-len(title)) + "║"
+
+			keyLine := fmt.Sprintf("║  %s  ║", botAccountKey)
+
+			output.Print(topBorder)
+			output.Print(titleLine)
+			output.Print(midBorder)
+			output.Print(keyLine)
+			output.Print(botBorder)
+
+			output.Print("")
+			output.Print("📋 Bot Account Details:")
 			output.Print("   Name: %s", name)
-			output.Print("   Id: %s", accountId)
+			output.Print("   Account Id: %s", accountId)
 
 			output.Print("")
-			output.Success("You are now logged in to your new account.")
-			output.Success("Mnemonic saved to keychain.")
+			output.Success("You are now logged in to your new bot account.")
+			output.Success("Bot account key saved to keychain.")
 
 			return nil
 		},

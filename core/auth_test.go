@@ -97,60 +97,54 @@ func TestGetDefaultWorkDir(t *testing.T) {
 	}
 }
 
-func TestValidateMnemonic(t *testing.T) {
+func TestValidateAccountKey(t *testing.T) {
 	tests := []struct {
 		name        string
-		mnemonic    string
+		accountKey  string
 		wantErr     bool
 		errContains string
 	}{
 		{
-			name:     "valid 12 word mnemonic",
-			mnemonic: "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12",
-			wantErr:  false,
+			name:       "valid bot account key",
+			accountKey: "somevalidbase64encodedkeythatislongenough",
+			wantErr:    false,
 		},
 		{
-			name:     "valid 12 words with extra spaces",
-			mnemonic: "word1  word2   word3 word4 word5 word6 word7 word8 word9 word10 word11 word12",
-			wantErr:  false,
-		},
-		{
-			name:        "invalid 11 word mnemonic",
-			mnemonic:    "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11",
+			name:        "empty account key",
+			accountKey:  "",
 			wantErr:     true,
-			errContains: "must be exactly 12 words, got 11",
+			errContains: "bot account key cannot be empty",
 		},
 		{
-			name:        "invalid 13 word mnemonic",
-			mnemonic:    "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13",
+			name:        "too short account key",
+			accountKey:  "shortkey",
 			wantErr:     true,
-			errContains: "must be exactly 12 words, got 13",
+			errContains: "invalid bot account key format",
 		},
 		{
-			name:        "empty mnemonic",
-			mnemonic:    "",
-			wantErr:     true,
-			errContains: "cannot be empty",
+			name:       "minimum valid length key",
+			accountKey: "12345678901234567890", // exactly 20 chars
+			wantErr:    false,
 		},
 		{
-			name:        "whitespace only",
-			mnemonic:    "   ",
+			name:        "just under minimum length",
+			accountKey:  "1234567890123456789", // 19 chars
 			wantErr:     true,
-			errContains: "must be exactly 12 words, got 0",
+			errContains: "invalid bot account key format",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateMnemonic(tt.mnemonic)
+			err := ValidateAccountKey(tt.accountKey)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateMnemonic() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ValidateAccountKey() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if err != nil && tt.errContains != "" {
 				if !strings.Contains(err.Error(), tt.errContains) {
-					t.Errorf("ValidateMnemonic() error = %q, want to contain %q", err.Error(), tt.errContains)
+					t.Errorf("ValidateAccountKey() error = %q, want to contain %q", err.Error(), tt.errContains)
 				}
 			}
 		})
