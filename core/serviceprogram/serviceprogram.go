@@ -89,7 +89,7 @@ func (p *Program) run() {
 }
 
 func (p *Program) attemptAutoLogin() {
-	botAccountKey, err := core.GetStoredBotAccountKey()
+	botAccountKey, err := core.GetStoredAccountKey()
 	if err != nil || botAccountKey == "" {
 		output.Info("No stored bot account key found, skipping auto-login")
 		return

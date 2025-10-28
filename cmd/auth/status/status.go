@@ -19,7 +19,7 @@ func NewStatusCmd() *cobra.Command {
 		Long:  "Display current authentication status, including account information, server status, and stored credentials.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			hasBotKey := false
-			if _, err := core.GetStoredBotAccountKey(); err == nil {
+			if _, err := core.GetStoredAccountKey(); err == nil {
 				hasBotKey = true
 			}
 
