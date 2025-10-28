@@ -34,7 +34,7 @@ func NewCreateCmd() *cobra.Command {
 				}
 			}
 
-			botAccountKey, accountId, err := core.CreateBotWallet(name, rootPath, apiAddr)
+			accountKey, accountId, err := core.CreateBotWallet(name, rootPath, apiAddr)
 			if err != nil {
 				return output.Error("failed to create account: %w", err)
 			}
@@ -45,7 +45,7 @@ func NewCreateCmd() *cobra.Command {
 			output.Info("   This is the ONLY way to authenticate your bot account.")
 
 			output.Print("")
-			keyLen := len(botAccountKey)
+			keyLen := len(accountKey)
 			boxWidth := keyLen + 4 // 2 spaces padding on each side
 			if boxWidth < 24 {     // Minimum width for "BOT ACCOUNT KEY" title
 				boxWidth = 24
@@ -59,7 +59,7 @@ func NewCreateCmd() *cobra.Command {
 			titlePadding := (boxWidth - len(title)) / 2
 			titleLine := "║" + strings.Repeat(" ", titlePadding) + title + strings.Repeat(" ", boxWidth-titlePadding-len(title)) + "║"
 
-			keyLine := fmt.Sprintf("║  %s  ║", botAccountKey)
+			keyLine := fmt.Sprintf("║  %s  ║", accountKey)
 
 			output.Print(topBorder)
 			output.Print(titleLine)

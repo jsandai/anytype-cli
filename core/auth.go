@@ -44,7 +44,7 @@ func getDefaultWorkDir() string {
 }
 
 // LoginBotAccount performs the login steps for a bot account using a bot account key.
-func LoginBotAccount(botAccountKey, rootPath, apiAddr string) error {
+func LoginBotAccount(accountKey, rootPath, apiAddr string) error {
 	if rootPath == "" {
 		rootPath = getDefaultDataPath()
 	}
@@ -68,7 +68,7 @@ func LoginBotAccount(botAccountKey, rootPath, apiAddr string) error {
 		}
 
 		resp2, err := client.WalletRecover(ctx, &pb.RpcWalletRecoverRequest{
-			AccountKey: botAccountKey,
+			AccountKey: accountKey,
 			RootPath:   rootPath,
 		})
 		if err != nil {
@@ -79,8 +79,8 @@ func LoginBotAccount(botAccountKey, rootPath, apiAddr string) error {
 		}
 
 		resp3, err := client.WalletCreateSession(ctx, &pb.RpcWalletCreateSessionRequest{
-			Auth: &pb.RpcWalletCreateSessionRequestAuthOf{
-				AppKey: botAccountKey,
+			Auth: &pb.RpcWalletCreateSessionRequestAuthOfAccountKey{
+				AccountKey: accountKey,
 			},
 		})
 		if err != nil {
@@ -174,7 +174,7 @@ func ValidateAccountKey(accountKey string) error {
 func LoginBot(accountKey, rootPath, apiAddr string) error {
 	usedStoredKey := false
 	if accountKey == "" {
-		storedKey, err := GetStoredBotAccountKey()
+		storedKey, err := GetStoredAccountKey()
 		if err == nil && storedKey != "" {
 			accountKey = storedKey
 			output.Info("Using stored bot account key from keychain.")
@@ -196,7 +196,7 @@ func LoginBot(accountKey, rootPath, apiAddr string) error {
 	}
 
 	if !usedStoredKey {
-		if err := SaveBotAccountKey(accountKey); err != nil {
+		if err := SaveAccountKey(accountKey); err != nil {
 			output.Warning("failed to save bot account key in keychain: %v", err)
 		} else {
 			output.Success("Bot account key saved to keychain.")
@@ -238,7 +238,7 @@ func Logout() error {
 		return err
 	}
 
-	if err := DeleteStoredBotAccountKey(); err != nil {
+	if err := DeleteStoredAccountKey(); err != nil {
 		return fmt.Errorf("failed to delete stored bot account key: %w", err)
 	}
 
@@ -267,7 +267,7 @@ func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 	}
 
 	var sessionToken string
-	var mnemonic string
+	var accountKey string
 
 	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
 		_, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
@@ -285,11 +285,11 @@ func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 		if err != nil {
 			return fmt.Errorf("wallet creation failed: %w", err)
 		}
-		mnemonic = createResp.Mnemonic
+		accountKey = createResp.AccountKey
 
 		sessionResp, err := client.WalletCreateSession(ctx, &pb.RpcWalletCreateSessionRequest{
-			Auth: &pb.RpcWalletCreateSessionRequestAuthOfMnemonic{
-				Mnemonic: mnemonic,
+			Auth: &pb.RpcWalletCreateSessionRequestAuthOfAccountKey{
+				AccountKey: accountKey,
 			},
 		})
 		if err != nil {
@@ -349,23 +349,7 @@ func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 		return "", "", err
 	}
 
-	var botAccountKey string
-	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
-		resp, err := client.WalletExportBot(ctx, &pb.RpcWalletExportBotRequest{
-			Mnemonic: mnemonic,
-			Index:    0, // Use index 0 for the first bot account
-		})
-		if err != nil {
-			return fmt.Errorf("failed to export bot account key: %w", err)
-		}
-		botAccountKey = resp.AccountKey
-		return nil
-	})
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := SaveBotAccountKey(botAccountKey); err != nil {
+	if err := SaveAccountKey(accountKey); err != nil {
 		output.Warning("failed to save bot account key: %v", err)
 	}
 
@@ -382,5 +366,5 @@ func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 		}
 	}
 
-	return botAccountKey, accountId, nil
+	return accountKey, accountId, nil
 }
