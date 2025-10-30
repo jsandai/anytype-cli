@@ -16,7 +16,7 @@ import (
 func NewCreateCmd() *cobra.Command {
 	var name string
 	var rootPath string
-	var apiAddr string
+	var listenAddress string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -34,7 +34,7 @@ func NewCreateCmd() *cobra.Command {
 				}
 			}
 
-			accountKey, accountId, err := core.CreateBotWallet(name, rootPath, apiAddr)
+			accountKey, accountId, err := core.CreateBotWallet(name, rootPath, listenAddress)
 			if err != nil {
 				return output.Error("failed to create account: %w", err)
 			}
@@ -81,8 +81,8 @@ func NewCreateCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&name, "name", "", "Account name")
-	cmd.Flags().StringVar(&rootPath, "root-path", "", "Custom root path for storing account data")
-	cmd.Flags().StringVar(&apiAddr, "api-addr", "", fmt.Sprintf("Custom API address (default: %s)", config.DefaultAPIAddress))
+	cmd.Flags().StringVar(&rootPath, "root-path", "", "Root path for account data")
+	cmd.Flags().StringVar(&listenAddress, "listen-address", config.DefaultAPIAddress, "API listen address in `host:port` format")
 
 	return cmd
 }

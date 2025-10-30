@@ -69,9 +69,9 @@ func NewJoinCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&networkId, "network", "", "Network Id (optional, defaults to Anytype network address)")
-	cmd.Flags().StringVar(&inviteCid, "invite-cid", "", "Invite Cid (optional, extracted from invite link if provided)")
-	cmd.Flags().StringVar(&inviteFileKey, "invite-key", "", "Invite file key (optional, extracted from invite link if provided)")
+	cmd.Flags().StringVar(&networkId, "network", "", "Network `id` to join")
+	cmd.Flags().StringVar(&inviteCid, "invite-cid", "", "Invite `cid` (extracted from invite link if not provided)")
+	cmd.Flags().StringVar(&inviteFileKey, "invite-key", "", "Invite file `key` (extracted from invite link if not provided)")
 
 	return cmd
 }

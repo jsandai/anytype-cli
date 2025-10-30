@@ -53,7 +53,6 @@ func LoginBotAccount(accountKey, rootPath, apiAddr string) error {
 	}
 
 	var sessionToken string
-
 	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
 			Platform: runtime.GOOS,
@@ -92,7 +91,6 @@ func LoginBotAccount(accountKey, rootPath, apiAddr string) error {
 		sessionToken = resp3.Token
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
