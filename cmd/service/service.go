@@ -40,19 +40,19 @@ func getService() (service.Service, error) {
 func NewServiceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "service",
-		Short: "Manage anytype as a system service",
-		Long:  "Install, uninstall, start, stop, and check status of anytype running as a system service.",
+		Short: "Manage anytype as a user service",
+		Long:  "Install, uninstall, start, stop, and check status of anytype running as a user service.",
 	}
 
 	cmd.AddCommand(
 		&cobra.Command{
 			Use:   "install",
-			Short: "Install as a system service",
+			Short: "Install as a user service",
 			RunE:  installService,
 		},
 		&cobra.Command{
 			Use:   "uninstall",
-			Short: "Uninstall the system service",
+			Short: "Uninstall the user service",
 			RunE:  uninstallService,
 		},
 		&cobra.Command{
