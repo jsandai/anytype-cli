@@ -46,8 +46,8 @@ func NewCreateCmd() *cobra.Command {
 
 			output.Print("")
 			keyLen := len(accountKey)
-			boxWidth := keyLen + 4 // 2 spaces padding on each side
-			if boxWidth < 24 {     // Minimum width for "BOT ACCOUNT KEY" title
+			boxWidth := keyLen + 4
+			if boxWidth < 24 {
 				boxWidth = 24
 			}
 
