@@ -77,7 +77,7 @@ make build-windows-amd64
    go test ./cmd/...
    
    # Run specific test
-   go test -run TestValidateMnemonic ./core
+   go test -run TestValidateAccountKey ./core
    
    # Run tests with verbose output
    go test -v ./...

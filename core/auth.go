@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -161,9 +162,22 @@ func ValidateAccountKey(accountKey string) error {
 	if accountKey == "" {
 		return fmt.Errorf("bot account key cannot be empty")
 	}
-	// Bot account keys are typically base64 encoded strings
-	if len(accountKey) < 20 {
-		return fmt.Errorf("invalid bot account key format")
+
+	// Check if this looks like a mnemonic (space-separated words) instead of an account key
+	words := strings.Fields(accountKey)
+	if len(words) >= 12 {
+		return fmt.Errorf("this appears to be a mnemonic phrase, not an account key - the CLI only supports bot accounts created via 'anytype auth create'")
+	}
+
+	// Validate base64 format by attempting to decode
+	decoded, err := base64.StdEncoding.DecodeString(accountKey)
+	if err != nil {
+		return fmt.Errorf("invalid bot account key format: must be valid base64")
+	}
+
+	// Basic sanity check: key should be at least 32 bytes
+	if len(decoded) < 32 {
+		return fmt.Errorf("invalid bot account key format: insufficient key material")
 	}
 
 	return nil

@@ -105,32 +105,44 @@ func TestValidateAccountKey(t *testing.T) {
 		errContains string
 	}{
 		{
-			name:       "valid bot account key",
-			accountKey: "somevalidbase64encodedkeythatislongenough",
+			name:       "valid 64-byte account key (real example)",
+			accountKey: "bNYSkBlOzNMKpDupAgL3g31Hnq7JpeX45O6MCpUqNdt16Avbgy5T5oQECKvAoy3+E4wHGPpCRCVWZQQCXRh7xw==",
+			wantErr:    false,
+		},
+		{
+			name:       "valid 32-byte account key (minimum)",
+			accountKey: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 			wantErr:    false,
 		},
 		{
 			name:        "empty account key",
 			accountKey:  "",
 			wantErr:     true,
-			errContains: "bot account key cannot be empty",
+			errContains: "cannot be empty",
 		},
 		{
-			name:        "too short account key",
-			accountKey:  "shortkey",
+			name:        "mnemonic instead of account key",
+			accountKey:  "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12",
 			wantErr:     true,
-			errContains: "invalid bot account key format",
+			errContains: "appears to be a mnemonic phrase",
 		},
 		{
-			name:       "minimum valid length key",
-			accountKey: "12345678901234567890", // exactly 20 chars
-			wantErr:    false,
-		},
-		{
-			name:        "just under minimum length",
-			accountKey:  "1234567890123456789", // 19 chars
+			name:        "not valid base64",
+			accountKey:  "this-is-not-valid-base64!!!",
 			wantErr:     true,
-			errContains: "invalid bot account key format",
+			errContains: "must be valid base64",
+		},
+		{
+			name:        "base64 but insufficient key material",
+			accountKey:  "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ==", // 30 bytes decoded
+			wantErr:     true,
+			errContains: "insufficient key material",
+		},
+		{
+			name:        "very short base64",
+			accountKey:  "YWJj", // "abc" decoded (3 bytes)
+			wantErr:     true,
+			errContains: "insufficient key material",
 		},
 	}
 
