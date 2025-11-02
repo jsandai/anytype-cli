@@ -156,7 +156,7 @@ anytype-cli/
 
 #### Prerequisites
 
-- Go 1.20 or later
+- Go 1.24 or later
 - Git
 - Make
 - C compiler (gcc or clang, for CGO)
@@ -171,7 +171,7 @@ cd anytype-cli
 # Build the CLI (automatically downloads tantivy library)
 make build
 
-# Install to ~/.local/bin (user installation)
+# Install to ~/.local/bin
 make install
 
 # Run tests
@@ -207,4 +207,4 @@ Thank you for your desire to develop Anytype together!
 
 Made by Any — a Swiss association 🇨🇭
 
-Licensed under [Any Source Available License 1.0.](./LICENSE.md).
+Licensed under [Any Source Available License 1.0](./LICENSE.md).
