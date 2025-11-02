@@ -88,12 +88,12 @@ func TestTokenFallback(t *testing.T) {
 
 	testToken := "test-session-token-67890"
 
-	savedToKeyring, err := SaveToken(testToken)
+	savedToKeyring, err := SaveSessionToken(testToken)
 	if err != nil {
-		t.Fatalf("SaveToken failed: %v", err)
+		t.Fatalf("SaveSessionToken failed: %v", err)
 	}
 	if savedToKeyring {
-		t.Error("Expected SaveToken to return false (config fallback) when keyring unavailable, got true")
+		t.Error("Expected SaveSessionToken to return false (config fallback) when keyring unavailable, got true")
 	}
 
 	configMgr := config.GetConfigManager()
@@ -107,9 +107,9 @@ func TestTokenFallback(t *testing.T) {
 		t.Errorf("Expected session token %q, got %q", testToken, cfg.SessionToken)
 	}
 
-	retrievedToken, fromKeyring, err := GetStoredToken()
+	retrievedToken, fromKeyring, err := GetStoredSessionToken()
 	if err != nil {
-		t.Fatalf("GetStoredToken failed: %v", err)
+		t.Fatalf("GetStoredSessionToken failed: %v", err)
 	}
 
 	if retrievedToken != testToken {
@@ -120,9 +120,9 @@ func TestTokenFallback(t *testing.T) {
 		t.Error("Expected fromKeyring to be false (config fallback), got true")
 	}
 
-	err = DeleteStoredToken()
+	err = DeleteStoredSessionToken()
 	if err != nil {
-		t.Fatalf("DeleteStoredToken failed: %v", err)
+		t.Fatalf("DeleteStoredSessionToken failed: %v", err)
 	}
 
 	err = configMgr.Load()
@@ -135,7 +135,7 @@ func TestTokenFallback(t *testing.T) {
 		t.Errorf("Expected empty session token after delete, got %q", cfg.SessionToken)
 	}
 
-	_, _, err = GetStoredToken()
+	_, _, err = GetStoredSessionToken()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound after delete, got %v", err)
 	}
@@ -191,7 +191,7 @@ func TestEmptyCredentialRetrieval(t *testing.T) {
 		t.Errorf("Expected ErrNotFound for non-existent account key, got %v", err)
 	}
 
-	_, _, err = GetStoredToken()
+	_, _, err = GetStoredSessionToken()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound for non-existent token, got %v", err)
 	}

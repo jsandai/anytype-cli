@@ -30,7 +30,7 @@ func NewStatusCmd() *cobra.Command {
 			hasToken := false
 			token := ""
 			tokenInKeyring := false
-			if t, inKeyring, err := core.GetStoredToken(); err == nil {
+			if t, inKeyring, err := core.GetStoredSessionToken(); err == nil {
 				hasToken = true
 				token = t
 				tokenInKeyring = inKeyring

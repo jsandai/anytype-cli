@@ -33,9 +33,9 @@ func isKeyringAvailable() bool {
 	return true
 }
 
-// SaveToken saves the session token to the keyring if available, otherwise to the config file.
+// SaveSessionToken saves the session token to the keyring if available, otherwise to the config file.
 // Returns true if saved to keyring, false if saved to config file.
-func SaveToken(token string) (bool, error) {
+func SaveSessionToken(token string) (bool, error) {
 	if isKeyringAvailable() {
 		return true, keyring.Set(keyringService, keyringTokenUser, token)
 	}
@@ -43,9 +43,9 @@ func SaveToken(token string) (bool, error) {
 	return false, config.SetSessionTokenToConfig(token)
 }
 
-// GetStoredToken retrieves the session token from keyring if available, otherwise from config file.
+// GetStoredSessionToken retrieves the session token from keyring if available, otherwise from config file.
 // Returns the token, true if retrieved from keyring (false if from config file), and any error.
-func GetStoredToken() (string, bool, error) {
+func GetStoredSessionToken() (string, bool, error) {
 	if isKeyringAvailable() {
 		token, err := keyring.Get(keyringService, keyringTokenUser)
 		if err == nil {
@@ -63,7 +63,7 @@ func GetStoredToken() (string, bool, error) {
 	return token, false, nil
 }
 
-func DeleteStoredToken() error {
+func DeleteStoredSessionToken() error {
 	var keyringErr error
 	if isKeyringAvailable() {
 		keyringErr = keyring.Delete(keyringService, keyringTokenUser)

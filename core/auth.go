@@ -70,7 +70,7 @@ func Authenticate(accountKey, rootPath, apiAddr string) error {
 		return err
 	}
 
-	savedToKeyring, err := SaveToken(sessionToken)
+	savedToKeyring, err := SaveSessionToken(sessionToken)
 	if err != nil {
 		return fmt.Errorf("failed to save session token: %w", err)
 	}
@@ -188,7 +188,7 @@ func Login(accountKey, rootPath, apiAddr string) error {
 // Logout logs out the current user by deleting stored credentials, clearing the config,
 // and attempting to stop the account and close the wallet session on the server.
 func Logout() error {
-	token, _, err := GetStoredToken()
+	token, _, err := GetStoredSessionToken()
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("not logged in")
@@ -200,7 +200,7 @@ func Logout() error {
 		return fmt.Errorf("failed to delete stored account key: %w", err)
 	}
 
-	if err := DeleteStoredToken(); err != nil {
+	if err := DeleteStoredSessionToken(); err != nil {
 		return fmt.Errorf("failed to delete stored token: %w", err)
 	}
 
@@ -287,7 +287,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) 
 		return "", "", false, err
 	}
 
-	savedToKeyring, err := SaveToken(sessionToken)
+	savedToKeyring, err := SaveSessionToken(sessionToken)
 	if err != nil {
 		return "", "", false, fmt.Errorf("failed to save session token: %w", err)
 	}
