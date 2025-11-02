@@ -1,4 +1,4 @@
-.PHONY: all build install install-local uninstall uninstall-local clean clean-tantivy download-tantivy lint lint-fix install-linter
+.PHONY: all build install uninstall clean clean-tantivy download-tantivy lint lint-fix install-linter
 
 all: download-tantivy build
 
@@ -94,33 +94,22 @@ download-tantivy: ## Download tantivy library for current platform
 
 ##@ Installation
 
-install: build ## Install to /usr/local/bin (may require sudo)
-	@echo "Installing Anytype CLI..."
-	@cp dist/anytype /usr/local/bin/anytype 2>/dev/null || sudo cp dist/anytype /usr/local/bin/anytype
-	@echo "Installed to /usr/local/bin/"
-	@echo ""
-	@echo "Usage:"
-	@echo "  anytype serve              # Run server in foreground"
-	@echo "  anytype service install    # Install as system service"
-
-install-local: build ## Install to ~/.local/bin (user installation)
+install: build ## Install to ~/.local/bin (user installation)
+	@echo "Installing anytype-cli..."
 	@mkdir -p $$HOME/.local/bin
 	@cp dist/anytype $$HOME/.local/bin/anytype
-	@echo "Installed to $$HOME/.local/bin/"
+	@ln -sf $$HOME/.local/bin/anytype $$HOME/.local/bin/any
+	@echo "Installed to $$HOME/.local/bin/ (available as 'anytype' and 'any')"
 	@echo "Make sure $$HOME/.local/bin is in your PATH"
 	@echo ""
 	@echo "Usage:"
 	@echo "  anytype serve              # Run server in foreground"
-	@echo "  anytype service install    # Install as system service"
+	@echo "  anytype service install    # Install as user service"
 
-uninstall: ## Uninstall from /usr/local/bin
-	@echo "Uninstalling Anytype CLI..."
-	@rm -f /usr/local/bin/anytype 2>/dev/null || sudo rm -f /usr/local/bin/anytype
-	@echo "Uninstalled from /usr/local/bin/"
-
-uninstall-local: ## Uninstall from ~/.local/bin
-	@echo "Uninstalling Anytype CLI from local..."
+uninstall: ## Uninstall from ~/.local/bin
+	@echo "Uninstalling anytype-cli..."
 	@rm -f $$HOME/.local/bin/anytype
+	@rm -f $$HOME/.local/bin/any
 	@echo "Uninstalled from $$HOME/.local/bin/"
 
 ##@ Development

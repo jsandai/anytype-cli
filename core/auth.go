@@ -3,9 +3,10 @@ package core
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -16,81 +17,66 @@ import (
 	"github.com/anyproto/anytype-cli/core/output"
 )
 
-// getDefaultDataPath returns the default data path for Anytype based on the operating system
-func getDefaultDataPath() string {
-	if dataPath := os.Getenv("DATA_PATH"); dataPath != "" {
-		return dataPath
-	}
-
-	baseDir := getDefaultWorkDir()
-	return filepath.Join(baseDir, "data")
-}
-
-// getDefaultWorkDir returns the default work directory for Anytype based on the operating system
-func getDefaultWorkDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		homeDir = "."
-	}
-
-	switch runtime.GOOS {
-	case "darwin":
-		return filepath.Join(homeDir, "Library", "Application Support", "anytype")
-	case "windows":
-		return filepath.Join(homeDir, "AppData", "Roaming", "anytype")
-	default:
-		return filepath.Join(homeDir, ".config", "anytype")
-	}
-}
-
-// LoginAccount performs the common steps for logging in with a given mnemonic and root path.
-func LoginAccount(mnemonic, rootPath, apiAddr string) error {
+// Authenticate performs the full authentication flow for a bot account using an account key.
+// This includes wallet recovery, session creation, account recovery, account selection, and config persistence.
+func Authenticate(accountKey, rootPath, apiAddr string) error {
 	if rootPath == "" {
-		rootPath = getDefaultDataPath()
+		rootPath = config.GetDataDir()
 	}
 	if apiAddr == "" {
 		apiAddr = config.DefaultAPIAddress
 	}
 
 	var sessionToken string
-
 	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
-		_, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
+		resp, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
 			Platform: runtime.GOOS,
 			Version:  Version,
-			Workdir:  getDefaultWorkDir(),
+			Workdir:  config.GetWorkDir(),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to set initial parameters: %w", err)
 		}
+		if resp.Error.Code != pb.RpcInitialSetParametersResponseError_NULL {
+			return fmt.Errorf("failed to set initial parameters: %s", resp.Error.Description)
+		}
 
-		_, err = client.WalletRecover(ctx, &pb.RpcWalletRecoverRequest{
-			Mnemonic: mnemonic,
-			RootPath: rootPath,
+		resp2, err := client.WalletRecover(ctx, &pb.RpcWalletRecoverRequest{
+			AccountKey: accountKey,
+			RootPath:   rootPath,
 		})
 		if err != nil {
 			return fmt.Errorf("wallet recovery failed: %w", err)
 		}
+		if resp2.Error.Code != pb.RpcWalletRecoverResponseError_NULL {
+			return fmt.Errorf("wallet recovery failed: %s", resp2.Error.Description)
+		}
 
-		resp, err := client.WalletCreateSession(ctx, &pb.RpcWalletCreateSessionRequest{
-			Auth: &pb.RpcWalletCreateSessionRequestAuthOfMnemonic{
-				Mnemonic: mnemonic,
+		resp3, err := client.WalletCreateSession(ctx, &pb.RpcWalletCreateSessionRequest{
+			Auth: &pb.RpcWalletCreateSessionRequestAuthOfAccountKey{
+				AccountKey: accountKey,
 			},
 		})
 		if err != nil {
 			return fmt.Errorf("failed to create session: %w", err)
 		}
-		sessionToken = resp.Token
+		if resp3.Error.Code != pb.RpcWalletCreateSessionResponseError_NULL {
+			return fmt.Errorf("failed to create session: %s", resp3.Error.Description)
+		}
+		sessionToken = resp3.Token
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 
-	err = SaveToken(sessionToken)
+	savedToKeyring, err := SaveToken(sessionToken)
 	if err != nil {
 		return fmt.Errorf("failed to save session token: %w", err)
+	}
+	if !savedToKeyring {
+		output.Warning("System keyring unavailable (requires D-Bus on Linux, Keychain on macOS, Credential Manager on Windows)")
+		output.Warning("Storing credentials in config file: %s (insecure)", config.GetConfigManager().GetFilePath())
 	}
 
 	er, err := ListenForEvents(sessionToken)
@@ -134,15 +120,11 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 		return err
 	}
 
-	configMgr := config.GetConfigManager()
-	if err := configMgr.Load(); err != nil {
-		output.Warning("failed to load config: %v", err)
-	}
-	if err := configMgr.SetAccountId(accountId); err != nil {
+	if err := config.SetAccountIdToConfig(accountId); err != nil {
 		output.Warning("failed to save account Id: %v", err)
 	}
 	if techSpaceId != "" {
-		if err := configMgr.SetTechSpaceId(techSpaceId); err != nil {
+		if err := config.SetTechSpaceIdToConfig(techSpaceId); err != nil {
 			output.Warning("failed to save tech space Id: %v", err)
 		}
 	}
@@ -150,58 +132,67 @@ func LoginAccount(mnemonic, rootPath, apiAddr string) error {
 	return nil
 }
 
-func ValidateMnemonic(mnemonic string) error {
-	if mnemonic == "" {
-		return fmt.Errorf("mnemonic cannot be empty")
+// ValidateAccountKey checks if the provided account key is valid.
+func ValidateAccountKey(accountKey string) error {
+	if accountKey == "" {
+		return fmt.Errorf("account key cannot be empty")
 	}
 
-	words := strings.Fields(mnemonic)
-	if len(words) != 12 {
-		return fmt.Errorf("mnemonic must be exactly 12 words, got %d", len(words))
+	words := strings.Fields(accountKey)
+	if len(words) >= 12 {
+		return fmt.Errorf("this appears to be a mnemonic phrase, not an account key - the CLI only supports bot accounts created via 'anytype auth create'")
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(accountKey)
+	if err != nil {
+		return fmt.Errorf("invalid account key format: must be valid base64")
+	}
+
+	if len(decoded) < 32 {
+		return fmt.Errorf("invalid account key format: insufficient key material")
 	}
 
 	return nil
 }
 
-func Login(mnemonic, rootPath, apiAddr string) error {
-	usedStoredMnemonic := false
-	if mnemonic == "" {
-		storedMnemonic, err := GetStoredMnemonic()
-		if err == nil && storedMnemonic != "" {
-			mnemonic = storedMnemonic
-			output.Info("Using stored mnemonic from keychain.")
-			usedStoredMnemonic = true
-		} else {
-			output.Print("Enter mnemonic (12 words): ")
-			reader := bufio.NewReader(os.Stdin)
-			mnemonic, _ = reader.ReadString('\n')
-			mnemonic = strings.TrimSpace(mnemonic)
-		}
+// Login handles user interaction for login by prompting for account key if not provided,
+// validating it, performing authentication, and saving the key to keychain.
+func Login(accountKey, rootPath, apiAddr string) error {
+	if accountKey == "" {
+		output.Print("Enter account key: ")
+		reader := bufio.NewReader(os.Stdin)
+		accountKey, _ = reader.ReadString('\n')
+		accountKey = strings.TrimSpace(accountKey)
 	}
 
-	if err := ValidateMnemonic(mnemonic); err != nil {
+	if err := ValidateAccountKey(accountKey); err != nil {
 		return err
 	}
 
-	err := LoginAccount(mnemonic, rootPath, apiAddr)
-	if err != nil {
-		return fmt.Errorf("failed to log in: %w", err)
+	if err := Authenticate(accountKey, rootPath, apiAddr); err != nil {
+		return err
 	}
 
-	if !usedStoredMnemonic {
-		if err := SaveMnemonic(mnemonic); err != nil {
-			output.Warning("failed to save mnemonic in keychain: %v", err)
-		} else {
-			output.Success("Mnemonic saved to keychain.")
-		}
+	savedToKeyring, err := SaveAccountKey(accountKey)
+	if err != nil {
+		output.Warning("Failed to save account key: %v", err)
+	} else if savedToKeyring {
+		output.Success("Account key saved to keychain.")
+	} else {
+		output.Success("Account key saved to config file.")
 	}
 
 	return nil
 }
 
+// Logout logs out the current user by stopping the account, closing the wallet session,
+// deleting stored credentials, and clearing the config.
 func Logout() error {
 	token, err := GetStoredToken()
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return fmt.Errorf("not logged in")
+		}
 		return fmt.Errorf("failed to get stored token: %w", err)
 	}
 
@@ -231,8 +222,8 @@ func Logout() error {
 		return err
 	}
 
-	if err := DeleteStoredMnemonic(); err != nil {
-		return fmt.Errorf("failed to delete stored mnemonic: %w", err)
+	if err := DeleteStoredAccountKey(); err != nil {
+		return fmt.Errorf("failed to delete stored account key: %w", err)
 	}
 
 	if err := DeleteStoredToken(); err != nil {
@@ -249,23 +240,24 @@ func Logout() error {
 	return nil
 }
 
-// CreateWallet creates a new wallet with the given root path and returns the mnemonic and account Id
-func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
+// CreateWallet creates a new wallet and account, establishes a session,
+// saves credentials, and returns the account key, account ID, and whether credentials were saved to keyring.
+func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) {
 	if rootPath == "" {
-		rootPath = getDefaultDataPath()
+		rootPath = config.GetDataDir()
 	}
 	if apiAddr == "" {
 		apiAddr = config.DefaultAPIAddress
 	}
 
-	var mnemonic string
 	var sessionToken string
+	var accountKey string
 
 	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
 		_, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
 			Platform: runtime.GOOS,
 			Version:  Version,
-			Workdir:  getDefaultWorkDir(),
+			Workdir:  config.GetWorkDir(),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to set initial parameters: %w", err)
@@ -277,11 +269,11 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		if err != nil {
 			return fmt.Errorf("wallet creation failed: %w", err)
 		}
-		mnemonic = createResp.Mnemonic
+		accountKey = createResp.AccountKey
 
 		sessionResp, err := client.WalletCreateSession(ctx, &pb.RpcWalletCreateSessionRequest{
-			Auth: &pb.RpcWalletCreateSessionRequestAuthOfMnemonic{
-				Mnemonic: mnemonic,
+			Auth: &pb.RpcWalletCreateSessionRequestAuthOfAccountKey{
+				AccountKey: accountKey,
 			},
 		})
 		if err != nil {
@@ -292,17 +284,21 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 	})
 
 	if err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 
-	err = SaveToken(sessionToken)
+	savedToKeyring, err := SaveToken(sessionToken)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to save session token: %w", err)
+		return "", "", false, fmt.Errorf("failed to save session token: %w", err)
+	}
+	if !savedToKeyring {
+		output.Warning("System keyring unavailable (requires D-Bus on Linux, Keychain on macOS, Credential Manager on Windows)")
+		output.Warning("Storing credentials in config file: %s (insecure)", config.GetConfigManager().GetFilePath())
 	}
 
 	_, err = ListenForEvents(sessionToken)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to start event listener: %w", err)
+		return "", "", false, fmt.Errorf("failed to start event listener: %w", err)
 	}
 
 	var accountId string
@@ -319,7 +315,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		return nil
 	})
 	if err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 
 	var techSpaceId string
@@ -338,23 +334,22 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		return nil
 	})
 	if err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 
-	_ = SaveMnemonic(mnemonic)
-
-	configMgr := config.GetConfigManager()
-	if err := configMgr.Load(); err != nil {
-		output.Warning("failed to load config: %v", err)
+	accountKeySavedToKeyring, err := SaveAccountKey(accountKey)
+	if err != nil {
+		output.Warning("Failed to save account key: %v", err)
 	}
-	if err := configMgr.SetAccountId(accountId); err != nil {
+
+	if err := config.SetAccountIdToConfig(accountId); err != nil {
 		output.Warning("failed to save account Id: %v", err)
 	}
 	if techSpaceId != "" {
-		if err := configMgr.SetTechSpaceId(techSpaceId); err != nil {
+		if err := config.SetTechSpaceIdToConfig(techSpaceId); err != nil {
 			output.Warning("failed to save tech space Id: %v", err)
 		}
 	}
 
-	return mnemonic, accountId, nil
+	return accountKey, accountId, accountKeySavedToKeyring, nil
 }

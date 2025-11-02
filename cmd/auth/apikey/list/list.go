@@ -21,7 +21,7 @@ func NewListCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resp, err := core.ListAPIKeys()
 			if err != nil {
-				return output.Error("failed to list API keys: %w", err)
+				return output.Error("Failed to list API keys: %w", err)
 			}
 
 			if len(resp.App) == 0 {

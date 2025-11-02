@@ -20,7 +20,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 
 	latest, err := update.GetLatestVersion()
 	if err != nil {
-		return output.Error("failed to check latest version: %w", err)
+		return output.Error("Failed to check latest version: %w", err)
 	}
 
 	current := update.GetCurrentVersion()
@@ -37,6 +37,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	output.Success("Successfully updated to %s", latest)
-	output.Info("Restart your terminal or run 'anytype' to use the new version")
+	output.Info("If the service is installed, restart it with: anytype service restart")
+	output.Info("Otherwise, restart your terminal or run 'anytype' to use the new version")
 	return nil
 }

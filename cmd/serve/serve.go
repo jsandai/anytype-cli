@@ -31,7 +31,7 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	s, err := service.New(prg, svcConfig)
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
 	}
 
 	err = s.Run()

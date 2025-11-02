@@ -11,6 +11,10 @@ import (
 type Config struct {
 	AccountId   string `json:"accountId,omitempty"`
 	TechSpaceId string `json:"techSpaceId,omitempty"`
+	// Credentials stored in plain text - only used when keyring is unavailable
+	// WARNING: This is insecure and should only be used on headless servers
+	AccountKey   string `json:"accountKey,omitempty"`
+	SessionToken string `json:"sessionToken,omitempty"`
 }
 
 var (
@@ -27,21 +31,11 @@ type ConfigManager struct {
 func GetConfigManager() *ConfigManager {
 	once.Do(func() {
 		instance = &ConfigManager{
-			config: &Config{},
+			config:   &Config{},
+			filePath: GetConfigFilePath(),
 		}
-		instance.filePath = getConfigFilePath()
 	})
 	return instance
-}
-
-func getConfigFilePath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-
-	configDir := filepath.Join(home, ".anytype")
-	return filepath.Join(configDir, "config.json")
 }
 
 func (cm *ConfigManager) Load() error {
@@ -86,7 +80,7 @@ func (cm *ConfigManager) Save() error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	if err := os.WriteFile(cm.filePath, data, 0644); err != nil {
+	if err := os.WriteFile(cm.filePath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
@@ -102,6 +96,12 @@ func (cm *ConfigManager) Get() *Config {
 	return &configCopy
 }
 
+func (cm *ConfigManager) GetFilePath() string {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	return cm.filePath
+}
+
 func (cm *ConfigManager) SetAccountId(accountId string) error {
 	cm.mu.Lock()
 	cm.config.AccountId = accountId
@@ -113,6 +113,22 @@ func (cm *ConfigManager) SetAccountId(accountId string) error {
 func (cm *ConfigManager) SetTechSpaceId(techSpaceId string) error {
 	cm.mu.Lock()
 	cm.config.TechSpaceId = techSpaceId
+	cm.mu.Unlock()
+
+	return cm.Save()
+}
+
+func (cm *ConfigManager) SetSessionToken(token string) error {
+	cm.mu.Lock()
+	cm.config.SessionToken = token
+	cm.mu.Unlock()
+
+	return cm.Save()
+}
+
+func (cm *ConfigManager) SetAccountKey(accountKey string) error {
+	cm.mu.Lock()
+	cm.config.AccountKey = accountKey
 	cm.mu.Unlock()
 
 	return cm.Save()

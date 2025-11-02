@@ -14,7 +14,7 @@ func NewResetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configMgr := config.GetConfigManager()
 			if err := configMgr.Reset(); err != nil {
-				return output.Error("failed to reset config: %w", err)
+				return output.Error("Failed to reset config: %w", err)
 			}
 
 			output.Success("Configuration reset to defaults")

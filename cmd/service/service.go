@@ -1,12 +1,13 @@
 package service
 
 import (
+	"errors"
 	"os"
-	"path/filepath"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 
+	"github.com/anyproto/anytype-cli/core/config"
 	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/anyproto/anytype-cli/core/serviceprogram"
 )
@@ -17,9 +18,8 @@ func getService() (service.Service, error) {
 		"UserService": true,
 	}
 
-	homeDir := os.Getenv("HOME")
-	if homeDir != "" {
-		logDir := filepath.Join(homeDir, ".anytype", "logs")
+	logDir := config.GetLogsDir()
+	if logDir != "" {
 		if err := os.MkdirAll(logDir, 0755); err == nil {
 			options["LogDirectory"] = logDir
 		}
@@ -40,19 +40,19 @@ func getService() (service.Service, error) {
 func NewServiceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "service",
-		Short: "Manage anytype as a system service",
-		Long:  "Install, uninstall, start, stop, and check status of anytype running as a system service.",
+		Short: "Manage anytype as a user service",
+		Long:  "Install, uninstall, start, stop, and check status of anytype running as a user service.",
 	}
 
 	cmd.AddCommand(
 		&cobra.Command{
 			Use:   "install",
-			Short: "Install as a system service",
+			Short: "Install as a user service",
 			RunE:  installService,
 		},
 		&cobra.Command{
 			Use:   "uninstall",
-			Short: "Uninstall the system service",
+			Short: "Uninstall the user service",
 			RunE:  uninstallService,
 		},
 		&cobra.Command{
@@ -83,12 +83,12 @@ func NewServiceCmd() *cobra.Command {
 func installService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
 	}
 
 	err = s.Install()
 	if err != nil {
-		return output.Error("failed to install service: %w", err)
+		return output.Error("Failed to install service: %w", err)
 	}
 
 	output.Success("anytype service installed successfully")
@@ -104,12 +104,12 @@ func installService(cmd *cobra.Command, args []string) error {
 func uninstallService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
 	}
 
 	err = s.Uninstall()
 	if err != nil {
-		return output.Error("failed to uninstall service: %w", err)
+		return output.Error("Failed to uninstall service: %w", err)
 	}
 
 	output.Success("anytype service uninstalled successfully")
@@ -119,12 +119,20 @@ func uninstallService(cmd *cobra.Command, args []string) error {
 func startService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
+	}
+
+	// Check if service is installed first
+	_, err = s.Status()
+	if err != nil && errors.Is(err, service.ErrNotInstalled) {
+		output.Warning("anytype service is not installed")
+		output.Info("Run 'anytype service install' to install it first")
+		return nil
 	}
 
 	err = s.Start()
 	if err != nil {
-		return output.Error("failed to start service: %w", err)
+		return output.Error("Failed to start service: %w", err)
 	}
 
 	output.Success("anytype service started")
@@ -134,12 +142,20 @@ func startService(cmd *cobra.Command, args []string) error {
 func stopService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
+	}
+
+	// Check if service is installed first
+	_, err = s.Status()
+	if err != nil && errors.Is(err, service.ErrNotInstalled) {
+		output.Warning("anytype service is not installed")
+		output.Info("Run 'anytype service install' to install it first")
+		return nil
 	}
 
 	err = s.Stop()
 	if err != nil {
-		return output.Error("failed to stop service: %w", err)
+		return output.Error("Failed to stop service: %w", err)
 	}
 
 	output.Success("anytype service stopped")
@@ -149,12 +165,20 @@ func stopService(cmd *cobra.Command, args []string) error {
 func restartService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
+	}
+
+	// Check if service is installed first
+	_, err = s.Status()
+	if err != nil && errors.Is(err, service.ErrNotInstalled) {
+		output.Warning("anytype service is not installed")
+		output.Info("Run 'anytype service install' to install it first")
+		return nil
 	}
 
 	err = s.Restart()
 	if err != nil {
-		return output.Error("failed to restart service: %w", err)
+		return output.Error("Failed to restart service: %w", err)
 	}
 
 	output.Success("anytype service restarted")
@@ -164,17 +188,17 @@ func restartService(cmd *cobra.Command, args []string) error {
 func statusService(cmd *cobra.Command, args []string) error {
 	s, err := getService()
 	if err != nil {
-		return output.Error("failed to create service: %w", err)
+		return output.Error("Failed to create service: %w", err)
 	}
 
 	status, err := s.Status()
 	if err != nil {
-		if err == service.ErrNotInstalled {
+		if errors.Is(err, service.ErrNotInstalled) {
 			output.Info("anytype service is not installed")
 			output.Info("Run 'anytype service install' to install it")
 			return nil
 		}
-		return output.Error("failed to get service status: %w", err)
+		return output.Error("Failed to get service status: %w", err)
 	}
 
 	switch status {
