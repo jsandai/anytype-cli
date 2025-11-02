@@ -121,11 +121,11 @@ func Authenticate(accountKey, rootPath, apiAddr string) error {
 	}
 
 	if err := config.SetAccountIdToConfig(accountId); err != nil {
-		output.Warning("failed to save account Id: %v", err)
+		output.Warning("Failed to save account Id: %v", err)
 	}
 	if techSpaceId != "" {
 		if err := config.SetTechSpaceIdToConfig(techSpaceId); err != nil {
-			output.Warning("failed to save tech space Id: %v", err)
+			output.Warning("Failed to save tech space Id: %v", err)
 		}
 	}
 
@@ -185,8 +185,8 @@ func Login(accountKey, rootPath, apiAddr string) error {
 	return nil
 }
 
-// Logout logs out the current user by stopping the account, closing the wallet session,
-// deleting stored credentials, and clearing the config.
+// Logout logs out the current user by deleting stored credentials, clearing the config,
+// and attempting to stop the account and close the wallet session on the server.
 func Logout() error {
 	token, _, err := GetStoredToken()
 	if err != nil {
@@ -194,32 +194,6 @@ func Logout() error {
 			return fmt.Errorf("not logged in")
 		}
 		return fmt.Errorf("failed to get stored token: %w", err)
-	}
-
-	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
-		resp, err := client.AccountStop(ctx, &pb.RpcAccountStopRequest{
-			RemoveData: false,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to log out: %w", err)
-		}
-		if resp.Error.Code != pb.RpcAccountStopResponseError_NULL {
-			output.Warning("Failed to log out: %s", resp.Error.Description)
-		}
-
-		resp2, err := client.WalletCloseSession(ctx, &pb.RpcWalletCloseSessionRequest{Token: token})
-		if err != nil {
-			return fmt.Errorf("failed to close session: %w", err)
-		}
-		if resp2.Error.Code != pb.RpcWalletCloseSessionResponseError_NULL {
-			output.Warning("Failed to close session: %s", resp2.Error.Description)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
 	}
 
 	if err := DeleteStoredAccountKey(); err != nil {
@@ -232,10 +206,36 @@ func Logout() error {
 
 	configMgr := config.GetConfigManager()
 	if err := configMgr.Delete(); err != nil {
-		output.Warning("failed to clear config: %v", err)
+		output.Warning("Failed to clear config: %v", err)
 	}
 
 	CloseEventReceiver()
+
+	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		resp, err := client.AccountStop(ctx, &pb.RpcAccountStopRequest{
+			RemoveData: false,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to stop account: %w", err)
+		}
+		if resp.Error.Code != pb.RpcAccountStopResponseError_NULL {
+			return fmt.Errorf("failed to stop account: %s", resp.Error.Description)
+		}
+
+		resp2, err := client.WalletCloseSession(ctx, &pb.RpcWalletCloseSessionRequest{Token: token})
+		if err != nil {
+			return fmt.Errorf("failed to close session: %w", err)
+		}
+		if resp2.Error.Code != pb.RpcWalletCloseSessionResponseError_NULL {
+			return fmt.Errorf("failed to close session: %s", resp2.Error.Description)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		output.Warning("Could not notify server: %v", err)
+	}
 
 	return nil
 }
@@ -343,11 +343,11 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) 
 	}
 
 	if err := config.SetAccountIdToConfig(accountId); err != nil {
-		output.Warning("failed to save account Id: %v", err)
+		output.Warning("Failed to save account Id: %v", err)
 	}
 	if techSpaceId != "" {
 		if err := config.SetTechSpaceIdToConfig(techSpaceId); err != nil {
-			output.Warning("failed to save tech space Id: %v", err)
+			output.Warning("Failed to save tech space Id: %v", err)
 		}
 	}
 
