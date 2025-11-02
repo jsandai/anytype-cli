@@ -188,7 +188,7 @@ func Login(accountKey, rootPath, apiAddr string) error {
 // Logout logs out the current user by stopping the account, closing the wallet session,
 // deleting stored credentials, and clearing the config.
 func Logout() error {
-	token, err := GetStoredToken()
+	token, _, err := GetStoredToken()
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("not logged in")

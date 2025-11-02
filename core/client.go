@@ -70,7 +70,7 @@ func GRPCCall(fn func(ctx context.Context, client service.ClientCommandsClient) 
 		return fmt.Errorf("error connecting to gRPC server: %w", err)
 	}
 
-	token, err := GetStoredToken()
+	token, _, err := GetStoredToken()
 	if err != nil {
 		return fmt.Errorf("failed to get stored token: %w", err)
 	}

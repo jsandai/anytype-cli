@@ -43,11 +43,13 @@ func SaveToken(token string) (bool, error) {
 	return false, config.SetSessionTokenToConfig(token)
 }
 
-func GetStoredToken() (string, error) {
+// GetStoredToken retrieves the session token from keyring if available, otherwise from config file.
+// Returns the token, true if retrieved from keyring (false if from config file), and any error.
+func GetStoredToken() (string, bool, error) {
 	if isKeyringAvailable() {
 		token, err := keyring.Get(keyringService, keyringTokenUser)
 		if err == nil {
-			return token, nil
+			return token, true, nil
 		}
 		if !errors.Is(err, keyring.ErrNotFound) {
 			keyringUnavailable = true
@@ -56,9 +58,9 @@ func GetStoredToken() (string, error) {
 
 	token, _ := config.GetSessionTokenFromConfig()
 	if token == "" {
-		return "", ErrNotFound
+		return "", false, ErrNotFound
 	}
-	return token, nil
+	return token, false, nil
 }
 
 func DeleteStoredToken() error {
@@ -85,11 +87,13 @@ func SaveAccountKey(accountKey string) (bool, error) {
 	return false, config.SetAccountKeyToConfig(accountKey)
 }
 
-func GetStoredAccountKey() (string, error) {
+// GetStoredAccountKey retrieves the account key from keyring if available, otherwise from config file.
+// Returns the account key, true if retrieved from keyring (false if from config file), and any error.
+func GetStoredAccountKey() (string, bool, error) {
 	if isKeyringAvailable() {
 		key, err := keyring.Get(keyringService, keyringAccountKeyUser)
 		if err == nil {
-			return key, nil
+			return key, true, nil
 		}
 		if !errors.Is(err, keyring.ErrNotFound) {
 			keyringUnavailable = true
@@ -98,9 +102,9 @@ func GetStoredAccountKey() (string, error) {
 
 	key, _ := config.GetAccountKeyFromConfig()
 	if key == "" {
-		return "", ErrNotFound
+		return "", false, ErrNotFound
 	}
-	return key, nil
+	return key, false, nil
 }
 
 func DeleteStoredAccountKey() error {

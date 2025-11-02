@@ -20,16 +20,20 @@ func NewStatusCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			hasAccountKey := false
 			accountKey := ""
-			if ak, err := core.GetStoredAccountKey(); err == nil && ak != "" {
+			accountKeyInKeyring := false
+			if ak, inKeyring, err := core.GetStoredAccountKey(); err == nil && ak != "" {
 				hasAccountKey = true
 				accountKey = ak
+				accountKeyInKeyring = inKeyring
 			}
 
 			hasToken := false
 			token := ""
-			if t, err := core.GetStoredToken(); err == nil {
+			tokenInKeyring := false
+			if t, inKeyring, err := core.GetStoredToken(); err == nil {
 				hasToken = true
 				token = t
+				tokenInKeyring = inKeyring
 			}
 
 			accountId, _ := config.GetAccountIdFromConfig()
@@ -41,15 +45,18 @@ func NewStatusCmd() *cobra.Command {
 			})
 			isServerRunning = err == nil
 
-			// If server is running and we have a token, we're logged in
-			// (server auto-logs in on restart using stored account key)
+			// If server is running and we have a token, we're logged in (server auto-logs in on restart using stored account key)
 			isLoggedIn := isServerRunning && hasToken
 
 			// Display status based on priority: server -> credentials -> login
 			if !isServerRunning {
 				output.Print("Server is not running. Start it with 'anytype service start' or 'anytype serve' (foreground mode).")
 				if hasAccountKey || hasToken || accountId != "" {
-					output.Print("Credentials are stored in keychain.")
+					storageLocation := "config file"
+					if accountKeyInKeyring || tokenInKeyring {
+						storageLocation = "keychain"
+					}
+					output.Print("Credentials are stored in %s.", storageLocation)
 				}
 				return nil
 			}
@@ -62,9 +69,17 @@ func NewStatusCmd() *cobra.Command {
 			output.Print("\033[1manytype\033[0m")
 
 			if isLoggedIn && accountId != "" {
-				output.Print("  ✓ Logged in to account \033[1m%s\033[0m (keychain)", accountId)
+				storageLocation := "config file"
+				if tokenInKeyring {
+					storageLocation = "keychain"
+				}
+				output.Print("  ✓ Logged in to account \033[1m%s\033[0m (%s)", accountId, storageLocation)
 			} else if hasToken || hasAccountKey {
-				output.Print("  ✗ Not logged in (credentials stored in keychain)")
+				storageLocation := "config file"
+				if accountKeyInKeyring || tokenInKeyring {
+					storageLocation = "keychain"
+				}
+				output.Print("  ✗ Not logged in (credentials stored in %s)", storageLocation)
 				if !isLoggedIn && hasToken {
 					output.Print("    Note: Server is not running or session expired. Start it with 'anytype service start' or 'anytype serve' (foreground mode).")
 				}
