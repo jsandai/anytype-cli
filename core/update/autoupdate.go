@@ -84,7 +84,7 @@ func performUpdateCheck() error {
 		LastCheck:   time.Now(),
 		LastVersion: latest,
 	}
-	saveCheckInfo(checkPath, check)
+	_ = saveCheckInfo(checkPath, check)
 
 	if !NeedsUpdate(current, latest) {
 		return nil

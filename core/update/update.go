@@ -373,7 +373,7 @@ func replaceBinary(newBinary string) error {
 			fmt.Fprint(os.Stdout, "Continue with sudo? [y/N]: ")
 
 			var response string
-			fmt.Scanln(&response)
+			_, _ = fmt.Scanln(&response)
 			if strings.ToLower(strings.TrimSpace(response)) != "y" {
 				return fmt.Errorf("update cancelled by user")
 			}
