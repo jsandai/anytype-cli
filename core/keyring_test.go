@@ -46,13 +46,17 @@ func TestKeyringFallback(t *testing.T) {
 		t.Errorf("Expected account key %q, got %q", testAccountKey, cfg.AccountKey)
 	}
 
-	retrievedKey, err := GetStoredAccountKey()
+	retrievedKey, fromKeyring, err := GetStoredAccountKey()
 	if err != nil {
 		t.Fatalf("GetStoredAccountKey failed: %v", err)
 	}
 
 	if retrievedKey != testAccountKey {
 		t.Errorf("Expected retrieved key %q, got %q", testAccountKey, retrievedKey)
+	}
+
+	if fromKeyring {
+		t.Error("Expected fromKeyring to be false (config fallback), got true")
 	}
 
 	err = DeleteStoredAccountKey()
@@ -70,7 +74,7 @@ func TestKeyringFallback(t *testing.T) {
 		t.Errorf("Expected empty account key after delete, got %q", cfg.AccountKey)
 	}
 
-	_, err = GetStoredAccountKey()
+	_, _, err = GetStoredAccountKey()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound after delete, got %v", err)
 	}
@@ -103,13 +107,17 @@ func TestTokenFallback(t *testing.T) {
 		t.Errorf("Expected session token %q, got %q", testToken, cfg.SessionToken)
 	}
 
-	retrievedToken, err := GetStoredToken()
+	retrievedToken, fromKeyring, err := GetStoredToken()
 	if err != nil {
 		t.Fatalf("GetStoredToken failed: %v", err)
 	}
 
 	if retrievedToken != testToken {
 		t.Errorf("Expected retrieved token %q, got %q", testToken, retrievedToken)
+	}
+
+	if fromKeyring {
+		t.Error("Expected fromKeyring to be false (config fallback), got true")
 	}
 
 	err = DeleteStoredToken()
@@ -127,7 +135,7 @@ func TestTokenFallback(t *testing.T) {
 		t.Errorf("Expected empty session token after delete, got %q", cfg.SessionToken)
 	}
 
-	_, err = GetStoredToken()
+	_, _, err = GetStoredToken()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound after delete, got %v", err)
 	}
@@ -178,12 +186,12 @@ func TestEmptyCredentialRetrieval(t *testing.T) {
 		t.Fatalf("Failed to delete config: %v", err)
 	}
 
-	_, err = GetStoredAccountKey()
+	_, _, err = GetStoredAccountKey()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound for non-existent account key, got %v", err)
 	}
 
-	_, err = GetStoredToken()
+	_, _, err = GetStoredToken()
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Expected ErrNotFound for non-existent token, got %v", err)
 	}
