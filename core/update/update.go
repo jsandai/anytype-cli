@@ -355,31 +355,3 @@ func replaceBinary(newBinary string) error {
 
 	return nil
 }
-
-func ReplaceBinaryNonInteractive(newBinary string) error {
-	if err := os.Chmod(newBinary, 0755); err != nil {
-		return err
-	}
-
-	currentBinary, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	currentBinary, err = filepath.EvalSymlinks(currentBinary)
-	if err != nil {
-		return err
-	}
-
-	if err := os.Rename(newBinary, currentBinary); err != nil {
-		if runtime.GOOS != "windows" {
-			cmd := exec.Command("sudo", "-n", "mv", newBinary, currentBinary)
-			if err := cmd.Run(); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-
-	return nil
-}
