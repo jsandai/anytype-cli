@@ -25,11 +25,6 @@ var httpClient = &http.Client{
 	Timeout: 5 * time.Minute,
 }
 
-type Release struct {
-	Version string
-	URL     string
-}
-
 func GetLatestVersion() (string, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", config.GitHubAPIBaseURL, config.GitHubOwner, config.GitHubRepo)
 

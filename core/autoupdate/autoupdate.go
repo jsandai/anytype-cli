@@ -13,6 +13,7 @@ import (
 
 	serviceCmd "github.com/anyproto/anytype-cli/cmd/service"
 	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/anyproto/anytype-cli/core/update"
 )
 
@@ -94,24 +95,17 @@ func performUpdateCheck() error {
 		return nil
 	}
 
-	tempDir, err := os.MkdirTemp("", "anytype-autoupdate-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tempDir)
-
 	if err := update.DownloadAndInstall(latest); err != nil {
 		return err
 	}
 
-	fmt.Printf("\n✓ Anytype CLI has been automatically updated from %s to %s\n", current, latest)
+	output.Success("Anytype CLI has been automatically updated from %s to %s", current, latest)
 
 	// Check if service is running and restart it automatically
 	if err := restartServiceIfRunning(); err != nil {
-		fmt.Printf("⚠️  Failed to restart service: %v\n", err)
-		fmt.Println("   Restart manually with: anytype service restart")
+		output.Warning("Failed to restart service: %v", err)
+		output.Info("Restart manually with: anytype service restart")
 	}
-	fmt.Println()
 
 	return nil
 }
@@ -135,11 +129,11 @@ func restartServiceIfRunning() error {
 
 	// Only restart if running
 	if status == service.StatusRunning {
-		fmt.Println("Restarting service with new binary...")
+		output.Info("Restarting service with new binary...")
 		if err := s.Restart(); err != nil {
 			return fmt.Errorf("failed to restart service: %w", err)
 		}
-		fmt.Println("Service restarted successfully")
+		output.Info("Service restarted successfully")
 	}
 
 	return nil
