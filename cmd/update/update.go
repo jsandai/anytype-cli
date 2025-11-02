@@ -60,7 +60,8 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	output.Success("Successfully updated to %s", latest)
-	output.Info("Restart your terminal or run 'anytype' to use the new version")
+	output.Info("If the service is installed, restart it with: anytype service restart")
+	output.Info("Otherwise, restart your terminal or run 'anytype' to use the new version")
 	return nil
 }
 
