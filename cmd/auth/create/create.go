@@ -41,7 +41,7 @@ func NewCreateCmd() *cobra.Command {
 
 			output.Success("Bot account created successfully!")
 
-			output.Warning("IMPORTANT: Save your bot account key in a secure location.")
+			output.Warning("IMPORTANT: Save your account key in a secure location.")
 			output.Info("   This is the ONLY way to authenticate your bot account.")
 
 			output.Print("")
@@ -74,7 +74,7 @@ func NewCreateCmd() *cobra.Command {
 
 			output.Print("")
 			output.Success("You are now logged in to your new bot account.")
-			output.Success("Bot account key saved to keychain.")
+			output.Success("Account key saved to keychain.")
 
 			return nil
 		},

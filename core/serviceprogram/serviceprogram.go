@@ -91,22 +91,22 @@ func (p *Program) run() {
 func (p *Program) attemptAutoLogin() {
 	botAccountKey, err := core.GetStoredAccountKey()
 	if err != nil || botAccountKey == "" {
-		output.Info("No stored bot account key found, skipping auto-login")
+		output.Info("No stored account key found, skipping auto-login")
 		return
 	}
 
-	output.Info("Found stored bot account key, attempting auto-login...")
+	output.Info("Found stored account key, attempting auto-login...")
 
-	maxRetries := 5
+	maxRetries := 3
 	for i := 0; i < maxRetries; i++ {
 		if err := core.LoginBotAccount(botAccountKey, "", ""); err != nil {
 			if i < maxRetries-1 {
 				time.Sleep(2 * time.Second)
 				continue
 			}
-			output.Info("Failed to auto-login with bot key after %d attempts: %v", maxRetries, err)
+			output.Info("Failed to auto-login with account key after %d attempts: %v", maxRetries, err)
 		} else {
-			output.Success("Successfully logged in using stored bot account key")
+			output.Success("Successfully logged in using stored account key")
 			return
 		}
 	}

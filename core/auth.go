@@ -160,7 +160,7 @@ func LoginBotAccount(accountKey, rootPath, apiAddr string) error {
 
 func ValidateAccountKey(accountKey string) error {
 	if accountKey == "" {
-		return fmt.Errorf("bot account key cannot be empty")
+		return fmt.Errorf("account key cannot be empty")
 	}
 
 	// Check if this looks like a mnemonic (space-separated words) instead of an account key
@@ -172,12 +172,12 @@ func ValidateAccountKey(accountKey string) error {
 	// Validate base64 format by attempting to decode
 	decoded, err := base64.StdEncoding.DecodeString(accountKey)
 	if err != nil {
-		return fmt.Errorf("invalid bot account key format: must be valid base64")
+		return fmt.Errorf("invalid account key format: must be valid base64")
 	}
 
 	// Basic sanity check: key should be at least 32 bytes
 	if len(decoded) < 32 {
-		return fmt.Errorf("invalid bot account key format: insufficient key material")
+		return fmt.Errorf("invalid account key format: insufficient key material")
 	}
 
 	return nil
@@ -189,10 +189,10 @@ func LoginBot(accountKey, rootPath, apiAddr string) error {
 		storedKey, err := GetStoredAccountKey()
 		if err == nil && storedKey != "" {
 			accountKey = storedKey
-			output.Info("Using stored bot account key from keychain.")
+			output.Info("Using stored account key from keychain.")
 			usedStoredKey = true
 		} else {
-			output.Print("Enter bot account key: ")
+			output.Print("Enter account key: ")
 			reader := bufio.NewReader(os.Stdin)
 			accountKey, _ = reader.ReadString('\n')
 			accountKey = strings.TrimSpace(accountKey)
@@ -209,9 +209,9 @@ func LoginBot(accountKey, rootPath, apiAddr string) error {
 
 	if !usedStoredKey {
 		if err := SaveAccountKey(accountKey); err != nil {
-			output.Warning("failed to save bot account key in keychain: %v", err)
+			output.Warning("failed to save account key in keychain: %v", err)
 		} else {
-			output.Success("Bot account key saved to keychain.")
+			output.Success("Account key saved to keychain.")
 		}
 	}
 
@@ -251,7 +251,7 @@ func Logout() error {
 	}
 
 	if err := DeleteStoredAccountKey(); err != nil {
-		return fmt.Errorf("failed to delete stored bot account key: %w", err)
+		return fmt.Errorf("failed to delete stored account key: %w", err)
 	}
 
 	if err := DeleteStoredToken(); err != nil {
@@ -268,7 +268,7 @@ func Logout() error {
 	return nil
 }
 
-// CreateBotWallet creates a new bot wallet with the given root path and returns the bot account key and account Id
+// CreateBotWallet creates a new bot wallet with the given root path and returns the account key and account Id
 // This creates a regular wallet but exports a bot-specific account key for authentication
 func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 	if rootPath == "" {
@@ -362,7 +362,7 @@ func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 	}
 
 	if err := SaveAccountKey(accountKey); err != nil {
-		output.Warning("failed to save bot account key: %v", err)
+		output.Warning("failed to save account key: %v", err)
 	}
 
 	configMgr := config.GetConfigManager()

@@ -16,7 +16,7 @@ func NewLoginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your bot account",
-		Long:  "Authenticate using your bot account key to access your Anytype bot account and stored data.",
+		Long:  "Authenticate using your account key to access your Anytype bot account and stored data.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := core.LoginBot(accountKey, rootPath, listenAddress); err != nil {
 				return output.Error("failed to log in: %w", err)
@@ -27,7 +27,7 @@ func NewLoginCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&accountKey, "account-key", "", "Bot account key for authentication")
+	cmd.Flags().StringVar(&accountKey, "account-key", "", "Account key for authentication")
 	cmd.Flags().StringVar(&rootPath, "path", "", "Root path for account data")
 	cmd.Flags().StringVar(&listenAddress, "listen-address", config.DefaultAPIAddress, "API listen address in `host:port` format")
 
