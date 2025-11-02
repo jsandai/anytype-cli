@@ -220,5 +220,7 @@ func NewConfigCmd() *cobra.Command {
 
 ## Code Style Guidelines
 
-### Naming Conventions
+- **Constants**: Centralize all configuration values, paths, URLs, and time intervals in `core/config/constants.go`
+- **User Output**: Always use `core/output` package functions (`output.Success()`, `output.Error()`, `output.Warning()`, `output.Info()`) instead of `fmt.Printf/Println`
+- **No Emojis**: Avoid emojis in output messages unless explicitly requested
 - **Use `Id` instead of `ID`**: Throughout the codebase, prefer `Id` over `ID` for consistency (e.g., `UserId`, `SpaceId`, `ObjectId`)
