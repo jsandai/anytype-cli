@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/anyproto/anytype-cli/core"
 	"github.com/anyproto/anytype-cli/core/config"
-	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/hashicorp/go-version"
 )
 
@@ -121,17 +119,11 @@ func CanUpdateBinary() bool {
 		return false
 	}
 
-	file, err := os.OpenFile(execPath, os.O_WRONLY, 0)
+	file, err := os.OpenFile(execPath, os.O_RDWR, 0)
 	if err != nil {
-		dir := filepath.Dir(execPath)
-		testFile := filepath.Join(dir, ".anytype-update-test")
-		if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
-			return false
-		}
-		os.Remove(testFile)
-		return true
+		return false
 	}
-	file.Close()
+	_ = file.Close()
 	return true
 }
 
@@ -367,27 +359,7 @@ func replaceBinary(newBinary string) error {
 	}
 
 	if err := os.Rename(newBinary, currentBinary); err != nil {
-		if runtime.GOOS != "windows" {
-			output.Warning("Update requires elevated permissions to replace the binary")
-			output.Info("Binary location: %s", currentBinary)
-			fmt.Fprint(os.Stdout, "Continue with sudo? [y/N]: ")
-
-			var response string
-			_, _ = fmt.Scanln(&response)
-			if strings.ToLower(strings.TrimSpace(response)) != "y" {
-				return fmt.Errorf("update cancelled by user")
-			}
-
-			cmd := exec.Command("sudo", "mv", newBinary, currentBinary)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("failed to replace binary: %w", err)
-			}
-		} else {
-			return fmt.Errorf("failed to replace binary: %w", err)
-		}
+		return fmt.Errorf("failed to replace binary (insufficient permissions): %w", err)
 	}
 
 	return nil
