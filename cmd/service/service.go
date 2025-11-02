@@ -3,11 +3,11 @@ package service
 import (
 	"errors"
 	"os"
-	"path/filepath"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 
+	"github.com/anyproto/anytype-cli/core/config"
 	"github.com/anyproto/anytype-cli/core/output"
 	"github.com/anyproto/anytype-cli/core/serviceprogram"
 )
@@ -18,9 +18,8 @@ func getService() (service.Service, error) {
 		"UserService": true,
 	}
 
-	homeDir := os.Getenv("HOME")
-	if homeDir != "" {
-		logDir := filepath.Join(homeDir, ".anytype", "logs")
+	logDir := config.GetLogsDir()
+	if logDir != "" {
 		if err := os.MkdirAll(logDir, 0755); err == nil {
 			options["LogDirectory"] = logDir
 		}

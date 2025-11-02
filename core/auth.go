@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -17,38 +16,11 @@ import (
 	"github.com/anyproto/anytype-cli/core/output"
 )
 
-// getDefaultDataPath returns the default data path for Anytype based on the operating system
-func getDefaultDataPath() string {
-	if dataPath := os.Getenv("DATA_PATH"); dataPath != "" {
-		return dataPath
-	}
-
-	baseDir := getDefaultWorkDir()
-	return filepath.Join(baseDir, "data")
-}
-
-// getDefaultWorkDir returns the default work directory for Anytype based on the operating system
-func getDefaultWorkDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		homeDir = "."
-	}
-
-	switch runtime.GOOS {
-	case "darwin":
-		return filepath.Join(homeDir, "Library", "Application Support", "anytype")
-	case "windows":
-		return filepath.Join(homeDir, "AppData", "Roaming", "anytype")
-	default:
-		return filepath.Join(homeDir, ".config", "anytype")
-	}
-}
-
 // Authenticate performs the full authentication flow for a bot account using an account key.
 // This includes wallet recovery, session creation, account recovery, account selection, and config persistence.
 func Authenticate(accountKey, rootPath, apiAddr string) error {
 	if rootPath == "" {
-		rootPath = getDefaultDataPath()
+		rootPath = config.GetDataDir()
 	}
 	if apiAddr == "" {
 		apiAddr = config.DefaultAPIAddress
@@ -59,7 +31,7 @@ func Authenticate(accountKey, rootPath, apiAddr string) error {
 		resp, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
 			Platform: runtime.GOOS,
 			Version:  Version,
-			Workdir:  getDefaultWorkDir(),
+			Workdir:  config.GetWorkDir(),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to set initial parameters: %w", err)
@@ -265,7 +237,7 @@ func Logout() error {
 // saves credentials, and returns the account key and account ID.
 func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 	if rootPath == "" {
-		rootPath = getDefaultDataPath()
+		rootPath = config.GetDataDir()
 	}
 	if apiAddr == "" {
 		apiAddr = config.DefaultAPIAddress
@@ -278,7 +250,7 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, error) {
 		_, err := client.InitialSetParameters(ctx, &pb.RpcInitialSetParametersRequest{
 			Platform: runtime.GOOS,
 			Version:  Version,
-			Workdir:  getDefaultWorkDir(),
+			Workdir:  config.GetWorkDir(),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to set initial parameters: %w", err)

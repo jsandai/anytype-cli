@@ -11,6 +11,10 @@ import (
 type Config struct {
 	AccountId   string `json:"accountId,omitempty"`
 	TechSpaceId string `json:"techSpaceId,omitempty"`
+	// Credentials stored in plain text - only used when keyring is unavailable
+	// WARNING: This is insecure and should only be used on headless servers
+	AccountKey   string `json:"accountKey,omitempty"`
+	SessionToken string `json:"sessionToken,omitempty"`
 }
 
 var (
@@ -29,19 +33,9 @@ func GetConfigManager() *ConfigManager {
 		instance = &ConfigManager{
 			config: &Config{},
 		}
-		instance.filePath = getConfigFilePath()
+		instance.filePath = GetConfigFilePath()
 	})
 	return instance
-}
-
-func getConfigFilePath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-
-	configDir := filepath.Join(home, ".anytype")
-	return filepath.Join(configDir, "config.json")
 }
 
 func (cm *ConfigManager) Load() error {
@@ -113,6 +107,22 @@ func (cm *ConfigManager) SetAccountId(accountId string) error {
 func (cm *ConfigManager) SetTechSpaceId(techSpaceId string) error {
 	cm.mu.Lock()
 	cm.config.TechSpaceId = techSpaceId
+	cm.mu.Unlock()
+
+	return cm.Save()
+}
+
+func (cm *ConfigManager) SetSessionToken(token string) error {
+	cm.mu.Lock()
+	cm.config.SessionToken = token
+	cm.mu.Unlock()
+
+	return cm.Save()
+}
+
+func (cm *ConfigManager) SetAccountKey(accountKey string) error {
+	cm.mu.Lock()
+	cm.config.AccountKey = accountKey
 	cm.mu.Unlock()
 
 	return cm.Save()
