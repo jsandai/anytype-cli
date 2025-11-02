@@ -1,4 +1,4 @@
-package autoupdate
+package update
 
 import (
 	"encoding/json"
@@ -14,7 +14,6 @@ import (
 	serviceCmd "github.com/anyproto/anytype-cli/cmd/service"
 	"github.com/anyproto/anytype-cli/core/config"
 	"github.com/anyproto/anytype-cli/core/output"
-	"github.com/anyproto/anytype-cli/core/update"
 )
 
 type updateCheck struct {
@@ -74,12 +73,12 @@ func performUpdateCheck() error {
 		return nil
 	}
 
-	latest, err := update.GetLatestVersion()
+	latest, err := GetLatestVersion()
 	if err != nil {
 		return err
 	}
 
-	current := update.GetCurrentVersion()
+	current := GetCurrentVersion()
 
 	check := updateCheck{
 		LastCheck:   time.Now(),
@@ -87,15 +86,15 @@ func performUpdateCheck() error {
 	}
 	saveCheckInfo(checkPath, check)
 
-	if !update.NeedsUpdate(current, latest) {
+	if !NeedsUpdate(current, latest) {
 		return nil
 	}
 
-	if !update.CanUpdateBinary() {
+	if !CanUpdateBinary() {
 		return nil
 	}
 
-	if err := update.DownloadAndInstall(latest); err != nil {
+	if err := DownloadAndInstall(latest); err != nil {
 		return err
 	}
 

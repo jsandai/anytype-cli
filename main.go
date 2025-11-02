@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/anyproto/anytype-cli/cmd"
 	"github.com/anyproto/anytype-cli/core"
-	"github.com/anyproto/anytype-cli/core/autoupdate"
+	"github.com/anyproto/anytype-cli/core/update"
 )
 
 func main() {
-	autoupdate.CheckAndUpdate()
+	update.CheckAndUpdate()
 
 	defer func() {
 		core.CloseEventReceiver()
