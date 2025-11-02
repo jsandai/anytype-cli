@@ -14,7 +14,7 @@ func NewLogoutCmd() *cobra.Command {
 		Long:  "End your current session and remove stored authentication tokens and account key from the system keychain.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := core.Logout(); err != nil {
-				return output.Error("failed to log out: %w", err)
+				return output.Error("Failed to log out: %w", err)
 			}
 			output.Success("Successfully logged out. Stored credentials removed.")
 			return nil

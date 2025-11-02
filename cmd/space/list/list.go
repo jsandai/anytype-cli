@@ -15,7 +15,7 @@ func NewListCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spaces, err := core.ListSpaces()
 			if err != nil {
-				return output.Error("failed to list spaces: %w", err)
+				return output.Error("Failed to list spaces: %w", err)
 			}
 
 			if len(spaces) == 0 {

@@ -21,11 +21,11 @@ func NewSetCmd() *cobra.Command {
 			switch key {
 			case "accountId":
 				if err := config.SetAccountIdToConfig(value); err != nil {
-					return output.Error("failed to set account Id: %w", err)
+					return output.Error("Failed to set account Id: %w", err)
 				}
 			case "techSpaceId":
 				if err := config.SetTechSpaceIdToConfig(value); err != nil {
-					return output.Error("failed to set tech space Id: %w", err)
+					return output.Error("Failed to set tech space Id: %w", err)
 				}
 			default:
 				return output.Error("unknown config key: %s", key)

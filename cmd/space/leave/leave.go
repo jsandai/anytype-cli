@@ -18,7 +18,7 @@ func NewLeaveCmd() *cobra.Command {
 			spaceId := args[0]
 
 			if err := core.LeaveSpace(spaceId); err != nil {
-				return output.Error("failed to leave space: %w", err)
+				return output.Error("Failed to leave space: %w", err)
 			}
 
 			output.Success("Successfully sent leave request for space with Id: %s", spaceId)

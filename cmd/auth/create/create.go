@@ -36,7 +36,7 @@ func NewCreateCmd() *cobra.Command {
 
 			accountKey, accountId, err := core.CreateWallet(name, rootPath, listenAddress)
 			if err != nil {
-				return output.Error("failed to create account: %w", err)
+				return output.Error("Failed to create account: %w", err)
 			}
 
 			output.Success("Bot account created successfully!")

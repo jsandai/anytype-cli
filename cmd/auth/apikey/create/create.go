@@ -19,7 +19,7 @@ func NewCreateCmd() *cobra.Command {
 
 			resp, err := core.CreateAPIKey(name)
 			if err != nil {
-				return output.Error("failed to create API key: %w", err)
+				return output.Error("Failed to create API key: %w", err)
 			}
 
 			output.Success("API key created successfully")

@@ -19,7 +19,7 @@ func NewRevokeCmd() *cobra.Command {
 
 			err := core.RevokeAPIKey(appId)
 			if err != nil {
-				return output.Error("failed to revoke API key: %w", err)
+				return output.Error("Failed to revoke API key: %w", err)
 			}
 
 			output.Success("API key with Id '%s' revoked successfully", appId)

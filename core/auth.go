@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
+	"github.com/zalando/go-keyring"
 
 	"github.com/anyproto/anytype-cli/core/config"
 	"github.com/anyproto/anytype-cli/core/output"
@@ -182,6 +184,9 @@ func Login(accountKey, rootPath, apiAddr string) error {
 func Logout() error {
 	token, err := GetStoredToken()
 	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			return fmt.Errorf("not logged in")
+		}
 		return fmt.Errorf("failed to get stored token: %w", err)
 	}
 

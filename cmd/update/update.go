@@ -38,7 +38,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 
 	latest, err := getLatestVersion()
 	if err != nil {
-		return output.Error("failed to check latest version: %w", err)
+		return output.Error("Failed to check latest version: %w", err)
 	}
 
 	current := core.GetVersion()
@@ -79,7 +79,7 @@ func getLatestVersion() (string, error) {
 		TagName string `json:"tag_name"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return "", output.Error("failed to parse release: %w", err)
+		return "", output.Error("Failed to parse release: %w", err)
 	}
 
 	return release.TagName, nil
@@ -88,7 +88,7 @@ func getLatestVersion() (string, error) {
 func downloadAndInstall(version string) error {
 	tempDir, err := os.MkdirTemp("", "anytype-update-*")
 	if err != nil {
-		return output.Error("failed to create temp dir: %w", err)
+		return output.Error("Failed to create temp dir: %w", err)
 	}
 	defer os.RemoveAll(tempDir)
 
@@ -98,7 +98,7 @@ func downloadAndInstall(version string) error {
 	}
 
 	if err := extractArchive(archivePath, tempDir); err != nil {
-		return output.Error("failed to extract: %w", err)
+		return output.Error("Failed to extract: %w", err)
 	}
 
 	binaryName := "anytype"
@@ -112,7 +112,7 @@ func downloadAndInstall(version string) error {
 	}
 
 	if err := replaceBinary(newBinary); err != nil {
-		return output.Error("failed to install: %w", err)
+		return output.Error("Failed to install: %w", err)
 	}
 
 	return nil
@@ -158,7 +158,7 @@ func downloadViaAPI(version, filename, destination string) error {
 		} `json:"assets"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return output.Error("failed to parse release: %w", err)
+		return output.Error("Failed to parse release: %w", err)
 	}
 
 	var assetURL string
@@ -320,10 +320,10 @@ func replaceBinary(newBinary string) error {
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				return output.Error("failed to replace binary: %w", err)
+				return output.Error("Failed to replace binary: %w", err)
 			}
 		} else {
-			return output.Error("failed to replace binary: %w", err)
+			return output.Error("Failed to replace binary: %w", err)
 		}
 	}
 

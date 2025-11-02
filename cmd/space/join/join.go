@@ -51,7 +51,7 @@ func NewJoinCmd() *cobra.Command {
 
 				info, err := core.ViewSpaceInvite(inviteCid, inviteFileKey)
 				if err != nil {
-					return output.Error("failed to view invite: %w", err)
+					return output.Error("Failed to view invite: %w", err)
 				}
 
 				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
@@ -61,7 +61,7 @@ func NewJoinCmd() *cobra.Command {
 			}
 
 			if err := core.JoinSpace(networkId, spaceId, inviteCid, inviteFileKey); err != nil {
-				return output.Error("failed to join space: %w", err)
+				return output.Error("Failed to join space: %w", err)
 			}
 
 			output.Success("Successfully sent join request to space '%s'", spaceId)

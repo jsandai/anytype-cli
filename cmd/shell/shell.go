@@ -32,7 +32,7 @@ func runShell(rootCmd *cobra.Command) error {
 		AutoComplete:    buildCompleter(rootCmd),
 	})
 	if err != nil {
-		return output.Error("failed to initialize readline: %w", err)
+		return output.Error("Failed to initialize readline: %w", err)
 	}
 	defer rl.Close()
 
