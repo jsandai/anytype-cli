@@ -27,7 +27,7 @@ GOLANGCI_LINT_VERSION := v2.2.1
 
 build: download-tantivy ## Build the cli binary
 	@echo "Building anytype-cli with embedded anytype-heart server..."
-	@CGO_ENABLED=1 CGO_LDFLAGS="$(CGO_LDFLAGS)" GOOS=$(GOOS) GOARCH=$(GOARCH) go build -tags "$(BUILD_TAGS)" -ldflags "$(LDFLAGS)" -o $(OUTPUT)
+	@CGO_ENABLED=1 CGO_LDFLAGS="$(CGO_LDFLAGS)" GOOS=$(GOOS) GOARCH=$(GOARCH) go build -tags "$(BUILD_TAGS)" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)" -o $(OUTPUT)
 	@echo "Built successfully: $(OUTPUT)"
 
 cross-compile: ## Build for all platforms
@@ -49,10 +49,10 @@ build-windows-amd64:
 	@GOOS=windows GOARCH=amd64 TANTIVY_LIB_PATH=dist/tantivy-windows-amd64 BUILD_TAGS=noheic CC=x86_64-w64-mingw32-gcc OUTPUT=dist/anytype-windows-amd64.exe $(MAKE) build
 
 build-linux-amd64:
-	@GOOS=linux GOARCH=amd64 TANTIVY_LIB_PATH=dist/tantivy-linux-amd64 BUILD_TAGS=noheic CC=x86_64-linux-musl-gcc OUTPUT=dist/anytype-linux-amd64 $(MAKE) build
+	@GOOS=linux GOARCH=amd64 TANTIVY_LIB_PATH=dist/tantivy-linux-amd64 BUILD_TAGS=noheic CC=x86_64-linux-musl-gcc EXTRA_LDFLAGS="-linkmode external -extldflags '-static'" OUTPUT=dist/anytype-linux-amd64 $(MAKE) build
 
 build-linux-arm64:
-	@GOOS=linux GOARCH=arm64 TANTIVY_LIB_PATH=dist/tantivy-linux-arm64 BUILD_TAGS=noheic CC=aarch64-linux-musl-gcc OUTPUT=dist/anytype-linux-arm64 $(MAKE) build
+	@GOOS=linux GOARCH=arm64 TANTIVY_LIB_PATH=dist/tantivy-linux-arm64 BUILD_TAGS=noheic CC=aarch64-linux-musl-gcc EXTRA_LDFLAGS="-linkmode external -extldflags '-static'" OUTPUT=dist/anytype-linux-arm64 $(MAKE) build
 
 download-tantivy: ## Download tantivy library for current platform
 	@if [ ! -f "$(TANTIVY_LIB_PATH)/libtantivy_go.a" ]; then \
