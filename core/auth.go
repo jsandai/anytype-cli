@@ -269,7 +269,6 @@ func Logout() error {
 }
 
 // CreateBotWallet creates a new bot wallet with the given root path and returns the account key and account Id
-// This creates a regular wallet but exports a bot-specific account key for authentication
 func CreateBotWallet(name, rootPath, apiAddr string) (string, string, error) {
 	if rootPath == "" {
 		rootPath = getDefaultDataPath()
