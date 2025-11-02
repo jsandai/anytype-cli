@@ -13,14 +13,17 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/anyproto/anytype-cli/core"
+	"github.com/anyproto/anytype-cli/core/config"
+	"github.com/anyproto/anytype-cli/core/output"
+	"github.com/hashicorp/go-version"
 )
 
-const (
-	GithubOwner = "anyproto"
-	GithubRepo  = "anytype-cli"
-)
+var httpClient = &http.Client{
+	Timeout: 5 * time.Minute,
+}
 
 type Release struct {
 	Version string
@@ -28,7 +31,7 @@ type Release struct {
 }
 
 func GetLatestVersion() (string, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", GithubOwner, GithubRepo)
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", config.GitHubAPIBaseURL, config.GitHubOwner, config.GitHubRepo)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -40,7 +43,7 @@ func GetLatestVersion() (string, error) {
 		req.Header.Set("Authorization", "token "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -62,11 +65,17 @@ func GetLatestVersion() (string, error) {
 }
 
 func NeedsUpdate(current, latest string) bool {
-	currentBase := current
-	if idx := strings.Index(current, "-"); idx != -1 {
-		currentBase = current[:idx]
+	currentVer, err := version.NewVersion(current)
+	if err != nil {
+		return false
 	}
-	return currentBase < latest
+
+	latestVer, err := version.NewVersion(latest)
+	if err != nil {
+		return false
+	}
+
+	return currentVer.LessThan(latestVer)
 }
 
 func GetCurrentVersion() string {
@@ -146,15 +155,15 @@ func downloadRelease(version, destination string) error {
 		return downloadViaAPI(version, archiveName, destination)
 	}
 
-	url := fmt.Sprintf("https://github.com/%s/%s/releases/download/%s/%s",
-		GithubOwner, GithubRepo, version, archiveName)
+	url := fmt.Sprintf("%s/%s/%s/releases/download/%s/%s",
+		config.GitHubWebBaseURL, config.GitHubOwner, config.GitHubRepo, version, archiveName)
 
 	return downloadFile(url, destination, "")
 }
 
 func downloadViaAPI(version, filename, destination string) error {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/tags/%s",
-		GithubOwner, GithubRepo, version)
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/tags/%s",
+		config.GitHubAPIBaseURL, config.GitHubOwner, config.GitHubRepo, version)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -166,7 +175,7 @@ func downloadViaAPI(version, filename, destination string) error {
 		req.Header.Set("Authorization", "token "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -212,7 +221,7 @@ func downloadFile(url, destination, token string) error {
 		req.Header.Set("Accept", "application/octet-stream")
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -237,6 +246,21 @@ func extractArchive(archivePath, destDir string) error {
 		return extractZip(archivePath, destDir)
 	}
 	return extractTarGz(archivePath, destDir)
+}
+
+// isValidExtractionPath validates that the target path is within the destination directory to prevent path traversal attacks
+func isValidExtractionPath(target, destDir string) bool {
+	cleanTarget := filepath.Clean(target)
+	cleanDest := filepath.Clean(destDir)
+
+	// Check if target starts with destDir
+	rel, err := filepath.Rel(cleanDest, cleanTarget)
+	if err != nil {
+		return false
+	}
+
+	// If the relative path starts with "..", it's trying to escape the destDir
+	return !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && rel != ".."
 }
 
 func extractTarGz(archivePath, destDir string) error {
@@ -264,6 +288,10 @@ func extractTarGz(archivePath, destDir string) error {
 
 		target := filepath.Join(destDir, header.Name)
 
+		if !isValidExtractionPath(target, destDir) {
+			return fmt.Errorf("illegal file path in archive: %s", header.Name)
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(target, 0755); err != nil {
@@ -287,6 +315,10 @@ func extractZip(archivePath, destDir string) error {
 
 	for _, f := range r.File {
 		target := filepath.Join(destDir, f.Name)
+
+		if !isValidExtractionPath(target, destDir) {
+			return fmt.Errorf("illegal file path in archive: %s", f.Name)
+		}
 
 		if f.FileInfo().IsDir() {
 			_ = os.MkdirAll(target, f.Mode())
@@ -341,6 +373,16 @@ func replaceBinary(newBinary string) error {
 
 	if err := os.Rename(newBinary, currentBinary); err != nil {
 		if runtime.GOOS != "windows" {
+			output.Warning("Update requires elevated permissions to replace the binary")
+			output.Info("Binary location: %s", currentBinary)
+			fmt.Fprint(os.Stdout, "Continue with sudo? [y/N]: ")
+
+			var response string
+			fmt.Scanln(&response)
+			if strings.ToLower(strings.TrimSpace(response)) != "y" {
+				return fmt.Errorf("update cancelled by user")
+			}
+
 			cmd := exec.Command("sudo", "mv", newBinary, currentBinary)
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout

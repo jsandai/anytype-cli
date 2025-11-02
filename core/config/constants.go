@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 const (
@@ -23,8 +24,16 @@ const (
 	// URLs
 	GRPCDNSAddress = "dns:///" + DefaultGRPCAddress
 
+	// GitHub repository
+	GitHubOwner = "anyproto"
+	GitHubRepo  = "anytype-cli"
+
+	// GitHub domains
+	GitHubAPIBaseURL = "https://api.github.com"
+	GitHubWebBaseURL = "https://github.com"
+
 	// External URLs
-	GitHubBaseURL    = "https://github.com/anyproto/anytype-cli"
+	GitHubBaseURL    = GitHubWebBaseURL + "/" + GitHubOwner + "/" + GitHubRepo
 	GitHubCommitURL  = GitHubBaseURL + "/commit/"
 	GitHubReleaseURL = GitHubBaseURL + "/releases/tag/"
 
@@ -37,6 +46,14 @@ const (
 	DataDirName    = "data"
 	LogsDirName    = "logs"
 	AnytypeName    = "anytype"
+
+	// Update related files
+	UpdateCheckFile = ".update-check"
+	UpdateLockFile  = ".update-lock"
+	UpdateLogFile   = "autoupdate.log"
+
+	// Update check interval
+	UpdateCheckInterval = 24 * time.Hour
 )
 
 func GetWorkDir() string {
@@ -76,4 +93,16 @@ func GetDataDir() string {
 
 func GetLogsDir() string {
 	return filepath.Join(GetConfigDir(), LogsDirName)
+}
+
+func GetUpdateCheckFilePath() string {
+	return filepath.Join(GetConfigDir(), UpdateCheckFile)
+}
+
+func GetUpdateLockFilePath() string {
+	return filepath.Join(GetConfigDir(), UpdateLockFile)
+}
+
+func GetUpdateLogFilePath() string {
+	return filepath.Join(GetLogsDir(), UpdateLogFile)
 }

@@ -12,8 +12,8 @@ import (
 	"github.com/anyproto/anytype-cli/core/serviceprogram"
 )
 
-// getService creates a service instance with our standard configuration
-func getService() (service.Service, error) {
+// GetService creates a service instance with our standard configuration
+func GetService() (service.Service, error) {
 	options := service.KeyValue{
 		"UserService": true,
 	}
@@ -81,7 +81,7 @@ func NewServiceCmd() *cobra.Command {
 }
 
 func installService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -102,7 +102,7 @@ func installService(cmd *cobra.Command, args []string) error {
 }
 
 func uninstallService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -117,7 +117,7 @@ func uninstallService(cmd *cobra.Command, args []string) error {
 }
 
 func startService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -140,7 +140,7 @@ func startService(cmd *cobra.Command, args []string) error {
 }
 
 func stopService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -163,7 +163,7 @@ func stopService(cmd *cobra.Command, args []string) error {
 }
 
 func restartService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -186,7 +186,7 @@ func restartService(cmd *cobra.Command, args []string) error {
 }
 
 func statusService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := GetService()
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
