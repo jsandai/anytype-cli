@@ -316,15 +316,12 @@ func replaceBinary(newBinary string) error {
 
 	if err := os.Rename(newBinary, currentBinary); err != nil {
 		if runtime.GOOS != "windows" {
-			cmd := exec.Command("sudo", "mv", newBinary, currentBinary)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			cmd := exec.Command("mv", newBinary, currentBinary)
 			if err := cmd.Run(); err != nil {
-				return output.Error("Failed to replace binary: %w", err)
+				return output.Error("failed to replace binary at %s (permission denied). To get the latest version, reinstall from repository: https://github.com/%s/%s", currentBinary, githubOwner, githubRepo)
 			}
 		} else {
-			return output.Error("Failed to replace binary: %w", err)
+			return output.Error("failed to replace binary at %s. To get the latest version, reinstall from repository: https://github.com/%s/%s", currentBinary, githubOwner, githubRepo)
 		}
 	}
 
