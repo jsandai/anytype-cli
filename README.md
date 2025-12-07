@@ -2,6 +2,21 @@
 
 A command-line interface for interacting with [Anytype](https://github.com/anyproto/anytype-ts). This CLI embeds [anytype-heart](https://github.com/anyproto/anytype-heart) as the server, making it a complete, self-contained solution for developers to work with a headless Anytype instance.
 
+## Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+  - [Running the Server](#running-the-server)
+  - [Network Configuration](#network-configuration)
+  - [Authentication](#authentication)
+  - [API Keys](#api-keys)
+  - [Space Management](#space-management)
+- [Development](#development)
+  - [Project Structure](#project-structure)
+  - [Building from Source](#building-from-source)
+- [Contribution](#contribution)
+
 ## Installation
 
 Install the latest release with a single command:
