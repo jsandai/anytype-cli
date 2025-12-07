@@ -10,7 +10,7 @@ import (
 
 func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [name]",
+		Use:   "create <name>",
 		Short: "Create a new API key",
 		Long:  "Create a new API key for programmatic access to Anytype",
 		Args:  cmdutil.ExactArgs(1, "cannot create API key: name argument required"),
