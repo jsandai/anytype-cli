@@ -119,7 +119,14 @@ The service management works across platforms:
 
 ### Network Configuration
 
-By default, the server binds to `127.0.0.1` (localhost only) on ports 31010-31012 and is not accessible from other machines. These ports are intentionally different from the Anytype desktop app (which uses 31007-31009), allowing both to run simultaneously on the same machine.
+By default, the server binds to `127.0.0.1` (localhost only) on ports 31010-31012 and is not accessible from other machines. These ports are intentionally different from the Anytype desktop app (which uses 31007-31009), allowing both to run simultaneously on the same machine. Port 31012 is the main API endpoint used for HTTP requests.
+
+| Port  | Service  | Description                 |
+| ----- | -------- | --------------------------- |
+| 31010 | gRPC     | gRPC server endpoint        |
+| 31011 | gRPC-Web | gRPC-Web server endpoint    |
+| 31012 | API      | HTTP API server endpoint ⭐ |
+
 
 You can change the API listen address using `--listen-address` (e.g., `--listen-address 0.0.0.0:31012`). For remote access, you can also use a reverse proxy, SSH tunnel, or Docker port mapping to expose the local ports.
 
