@@ -24,6 +24,7 @@ func TestInstallCmd_ListenAddressFlag(t *testing.T) {
 	flag := cmd.Flag("listen-address")
 	if flag == nil {
 		t.Fatal("listen-address flag not found")
+		return
 	}
 
 	if flag.DefValue != config.DefaultAPIAddress {
