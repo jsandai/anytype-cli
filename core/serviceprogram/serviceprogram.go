@@ -33,9 +33,14 @@ func GetServiceWithAddress(apiAddr string) (service.Service, error) {
 		}
 	}
 
+	effectiveAddr := apiAddr
+	if effectiveAddr == "" {
+		effectiveAddr = config.DefaultAPIAddress
+	}
+
 	args := []string{"serve"}
-	if apiAddr != "" && apiAddr != config.DefaultAPIAddress {
-		args = append(args, "--listen-address", apiAddr)
+	if effectiveAddr != config.DefaultAPIAddress {
+		args = append(args, "--listen-address", effectiveAddr)
 	}
 
 	svcConfig := &service.Config{
@@ -46,7 +51,7 @@ func GetServiceWithAddress(apiAddr string) (service.Service, error) {
 		Option:      options,
 	}
 
-	prg := New(config.DefaultAPIAddress)
+	prg := New(effectiveAddr)
 	return service.New(prg, svcConfig)
 }
 
