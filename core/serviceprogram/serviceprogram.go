@@ -3,6 +3,7 @@ package serviceprogram
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -13,6 +14,41 @@ import (
 	"github.com/anyproto/anytype-cli/core/grpcserver"
 	"github.com/anyproto/anytype-cli/core/output"
 )
+
+// GetService creates a service instance with default configuration.
+func GetService() (service.Service, error) {
+	return GetServiceWithAddress("")
+}
+
+// GetServiceWithAddress creates a service instance with a custom API listen address.
+func GetServiceWithAddress(apiAddr string) (service.Service, error) {
+	options := service.KeyValue{
+		"UserService": true,
+	}
+
+	logDir := config.GetLogsDir()
+	if logDir != "" {
+		if err := os.MkdirAll(logDir, 0755); err == nil {
+			options["LogDirectory"] = logDir
+		}
+	}
+
+	args := []string{"serve"}
+	if apiAddr != "" && apiAddr != config.DefaultAPIAddress {
+		args = append(args, "--listen-address", apiAddr)
+	}
+
+	svcConfig := &service.Config{
+		Name:        "anytype",
+		DisplayName: "Anytype",
+		Description: "Anytype",
+		Arguments:   args,
+		Option:      options,
+	}
+
+	prg := New(config.DefaultAPIAddress)
+	return service.New(prg, svcConfig)
+}
 
 type Program struct {
 	server        *grpcserver.Server
