@@ -35,6 +35,7 @@ func TestNew(t *testing.T) {
 
 			if prg == nil {
 				t.Fatal("New() returned nil")
+				return
 			}
 
 			if prg.apiListenAddr != tt.wantAddr {
