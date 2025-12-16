@@ -12,8 +12,15 @@ import (
 	"github.com/anyproto/anytype-cli/core/serviceprogram"
 )
 
+var listenAddress string
+
 // getService creates a service instance with our standard configuration
 func getService() (service.Service, error) {
+	return getServiceWithAddress("")
+}
+
+// getServiceWithAddress creates a service instance with a custom listen address
+func getServiceWithAddress(apiAddr string) (service.Service, error) {
 	options := service.KeyValue{
 		"UserService": true,
 	}
@@ -25,15 +32,20 @@ func getService() (service.Service, error) {
 		}
 	}
 
+	args := []string{"serve"}
+	if apiAddr != "" && apiAddr != config.DefaultAPIAddress {
+		args = append(args, "--listen-address", apiAddr)
+	}
+
 	svcConfig := &service.Config{
 		Name:        "anytype",
 		DisplayName: "Anytype",
 		Description: "Anytype",
-		Arguments:   []string{"serve"},
+		Arguments:   args,
 		Option:      options,
 	}
 
-	prg := serviceprogram.New()
+	prg := serviceprogram.New(config.DefaultAPIAddress)
 	return service.New(prg, svcConfig)
 }
 
@@ -44,12 +56,15 @@ func NewServiceCmd() *cobra.Command {
 		Long:  "Install, uninstall, start, stop, and check status of anytype running as a user service.",
 	}
 
+	installCmd := &cobra.Command{
+		Use:   "install",
+		Short: "Install as a user service",
+		RunE:  installService,
+	}
+	installCmd.Flags().StringVar(&listenAddress, "listen-address", config.DefaultAPIAddress, "API listen address in `host:port` format")
+
 	cmd.AddCommand(
-		&cobra.Command{
-			Use:   "install",
-			Short: "Install as a user service",
-			RunE:  installService,
-		},
+		installCmd,
 		&cobra.Command{
 			Use:   "uninstall",
 			Short: "Uninstall the user service",
@@ -81,7 +96,7 @@ func NewServiceCmd() *cobra.Command {
 }
 
 func installService(cmd *cobra.Command, args []string) error {
-	s, err := getService()
+	s, err := getServiceWithAddress(listenAddress)
 	if err != nil {
 		return output.Error("Failed to create service: %w", err)
 	}
@@ -92,6 +107,9 @@ func installService(cmd *cobra.Command, args []string) error {
 	}
 
 	output.Success("anytype service installed successfully")
+	if listenAddress != config.DefaultAPIAddress {
+		output.Info("API will listen on %s", listenAddress)
+	}
 	output.Print("\nTo manage the service:")
 	output.Print("  Start:   anytype service start")
 	output.Print("  Stop:    anytype service stop")

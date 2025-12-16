@@ -15,17 +15,19 @@ import (
 )
 
 type Program struct {
-	server   *grpcserver.Server
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg       sync.WaitGroup
-	startErr error
-	startCh  chan struct{}
+	server        *grpcserver.Server
+	ctx           context.Context
+	cancel        context.CancelFunc
+	wg            sync.WaitGroup
+	startErr      error
+	startCh       chan struct{}
+	apiListenAddr string
 }
 
-func New() *Program {
+func New(apiListenAddr string) *Program {
 	return &Program{
-		startCh: make(chan struct{}),
+		startCh:       make(chan struct{}),
+		apiListenAddr: apiListenAddr,
 	}
 }
 
@@ -99,7 +101,7 @@ func (p *Program) attemptAutoLogin() {
 
 	maxRetries := 3
 	for i := 0; i < maxRetries; i++ {
-		if err := core.Authenticate(accountKey, "", ""); err != nil {
+		if err := core.Authenticate(accountKey, "", p.apiListenAddr); err != nil {
 			if i < maxRetries-1 {
 				time.Sleep(2 * time.Second)
 				continue
