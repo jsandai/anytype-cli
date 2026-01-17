@@ -11,12 +11,14 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/kardianos/service v1.2.4
+	github.com/minio/selfupdate v0.6.0
 	github.com/spf13/cobra v1.10.2
 	github.com/zalando/go-keyring v0.2.6
 	google.golang.org/grpc v1.78.0
 )
 
 require (
+	aead.dev/minisign v0.2.0 // indirect
 	al.essio.dev/pkg/shellescape v1.6.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/JohannesKaufmann/html-to-markdown v1.6.0 // indirect

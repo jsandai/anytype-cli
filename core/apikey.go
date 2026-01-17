@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 
 	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
+	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 )
 
 // CreateAPIKey creates a new API key for local app access

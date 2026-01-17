@@ -23,8 +23,13 @@ const (
 	// URLs
 	GRPCDNSAddress = "dns:///" + DefaultGRPCAddress
 
+	// GitHub repository
+	GitHubOwner = "anyproto"
+	GitHubRepo  = "anytype-cli"
+
 	// External URLs
-	GitHubBaseURL    = "https://github.com/anyproto/anytype-cli"
+	GitHubBaseURL    = "https://github.com/" + GitHubOwner + "/" + GitHubRepo
+	GitHubAPIURL     = "https://api.github.com/repos/" + GitHubOwner + "/" + GitHubRepo
 	GitHubCommitURL  = GitHubBaseURL + "/commit/"
 	GitHubReleaseURL = GitHubBaseURL + "/releases/tag/"
 

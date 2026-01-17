@@ -50,7 +50,7 @@ func GetReleaseURL() string {
 		if Commit != "" {
 			return config.GitHubCommitURL + Commit
 		}
-		return "https://github.com/anyproto/anytype-cli"
+		return config.GitHubBaseURL
 	}
 	return config.GitHubReleaseURL + Version
 }
