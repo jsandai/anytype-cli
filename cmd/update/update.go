@@ -201,7 +201,6 @@ func downloadFile(url, destination, token string) error {
 	return err
 }
 
-// extractBinary extracts the binary from the archive and returns it as a ReadCloser
 func extractBinary(archivePath, binaryName string) (io.ReadCloser, error) {
 	if strings.HasSuffix(archivePath, ".zip") {
 		return extractBinaryFromZip(archivePath, binaryName)
@@ -234,7 +233,6 @@ func extractBinaryFromTarGz(archivePath, binaryName string) (io.ReadCloser, erro
 		}
 
 		if header.Typeflag == tar.TypeReg && header.Name == binaryName {
-			// Return a wrapper that closes both gz and file when done
 			return &tarGzReader{Reader: tr, gz: gz, file: file}, nil
 		}
 	}
@@ -268,7 +266,6 @@ func extractBinaryFromZip(archivePath, binaryName string) (io.ReadCloser, error)
 				r.Close()
 				return nil, err
 			}
-			// Return a wrapper that closes both the file and zip reader when done
 			return &zipReader{ReadCloser: rc, zipReader: r}, nil
 		}
 	}
