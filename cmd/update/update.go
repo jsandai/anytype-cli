@@ -237,6 +237,9 @@ func extractTarGz(archivePath, destDir string) error {
 			return err
 		}
 
+		if strings.Contains(header.Name, "..") {
+			return fmt.Errorf("illegal file path: %s", header.Name)
+		}
 		target := filepath.Join(destDir, header.Name)
 
 		switch header.Typeflag {
@@ -261,6 +264,9 @@ func extractZip(archivePath, destDir string) error {
 	defer r.Close()
 
 	for _, f := range r.File {
+		if strings.Contains(f.Name, "..") {
+			return fmt.Errorf("illegal file path: %s", f.Name)
+		}
 		target := filepath.Join(destDir, f.Name)
 
 		if f.FileInfo().IsDir() {
