@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/anyproto/anytype-cli/cmd/cmdutil"
 	"github.com/anyproto/anytype-cli/core"
 	"github.com/anyproto/anytype-cli/core/config"
 	"github.com/anyproto/anytype-cli/core/output"
