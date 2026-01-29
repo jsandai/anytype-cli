@@ -40,22 +40,32 @@ func NewJoinCmd() *cobra.Command {
 				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
 				spaceId = info.SpaceId
 			} else if len(args) > 0 {
-				// Parse invite link (supports any URL with /{cid}#{key} format)
+				// Parse invite link (supports multiple formats)
 				input := args[0]
 				u, err := url.Parse(input)
 				if err != nil {
 					return output.Error("invalid invite link: %w", err)
 				}
 
-				path := strings.TrimPrefix(u.Path, "/")
-				if path == "" {
-					return output.Error("invite link missing Cid")
-				}
-				inviteCid = path
+				// Try query params first: anytype://invite/?cid=...&key=...
+				queryCid := u.Query().Get("cid")
+				queryKey := u.Query().Get("key")
 
-				inviteFileKey = u.Fragment
-				if inviteFileKey == "" {
-					return output.Error("invite link missing key (should be after #)")
+				if queryCid != "" && queryKey != "" {
+					inviteCid = queryCid
+					inviteFileKey = queryKey
+				} else {
+					// Fall back to path/fragment: https://invite.any.coop/{cid}#{key}
+					path := strings.TrimPrefix(u.Path, "/")
+					if path == "" {
+						return output.Error("invite link missing cid (expected ?cid=...&key=... or /{cid}#{key})")
+					}
+					inviteCid = path
+
+					inviteFileKey = u.Fragment
+					if inviteFileKey == "" {
+						return output.Error("invite link missing key (expected ?cid=...&key=... or /{cid}#{key})")
+					}
 				}
 
 				info, err := core.ViewSpaceInvite(inviteCid, inviteFileKey)
