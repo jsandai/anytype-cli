@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 func GetAccountIdFromConfig() (string, error) {
@@ -119,4 +122,21 @@ func SetNetworkConfigPathToConfig(path string) error {
 	}
 
 	return configMgr.SetNetworkConfigPath(path)
+}
+
+// ReadNetworkIdFromYAML reads the networkId field from a network config YAML file
+func ReadNetworkIdFromYAML(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read network config: %w", err)
+	}
+
+	var cfg struct {
+		NetworkId string `yaml:"networkId"`
+	}
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return "", fmt.Errorf("failed to parse network config: %w", err)
+	}
+
+	return cfg.NetworkId, nil
 }

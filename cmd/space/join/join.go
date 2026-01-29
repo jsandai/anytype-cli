@@ -28,8 +28,17 @@ func NewJoinCmd() *cobra.Command {
 			input := args[0]
 			var spaceId string
 
+			// Load network ID: prefer flag, then saved config YAML, then default
 			if networkId == "" {
-				networkId = config.AnytypeNetworkAddress
+				if networkConfigPath, _ := config.GetNetworkConfigPathFromConfig(); networkConfigPath != "" {
+					// Read network ID from the YAML config file
+					if id, err := config.ReadNetworkIdFromYAML(networkConfigPath); err == nil && id != "" {
+						networkId = id
+					}
+				}
+				if networkId == "" {
+					networkId = config.AnytypeNetworkAddress
+				}
 			}
 
 			if strings.HasPrefix(input, "https://invite.any.coop/") {
