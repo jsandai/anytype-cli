@@ -101,3 +101,22 @@ func SetAccountKeyToConfig(accountKey string) error {
 
 	return configMgr.SetAccountKey(accountKey)
 }
+
+func GetNetworkConfigPathFromConfig() (string, error) {
+	configMgr := GetConfigManager()
+	if err := configMgr.Load(); err != nil {
+		return "", fmt.Errorf("failed to load config: %w", err)
+	}
+
+	cfg := configMgr.Get()
+	return cfg.NetworkConfigPath, nil
+}
+
+func SetNetworkConfigPathToConfig(path string) error {
+	configMgr := GetConfigManager()
+	if err := configMgr.Load(); err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	return configMgr.SetNetworkConfigPath(path)
+}
