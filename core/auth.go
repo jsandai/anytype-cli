@@ -242,12 +242,19 @@ func Logout() error {
 
 // CreateWallet creates a new wallet and account, establishes a session,
 // saves credentials, and returns the account key, account ID, and whether credentials were saved to keyring.
-func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) {
+// If networkConfigPath is provided, the account will be created on that custom network.
+func CreateWallet(name, rootPath, apiAddr, networkConfigPath string) (string, string, bool, error) {
 	if rootPath == "" {
 		rootPath = config.GetDataDir()
 	}
 	if apiAddr == "" {
 		apiAddr = config.DefaultAPIAddress
+	}
+
+	// Determine network mode
+	networkMode := pb.RpcAccount_DefaultConfig
+	if networkConfigPath != "" {
+		networkMode = pb.RpcAccount_CustomConfig
 	}
 
 	var sessionToken string
@@ -304,9 +311,11 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) 
 	var accountId string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.AccountCreate(ctx, &pb.RpcAccountCreateRequest{
-			Name:              name,
-			StorePath:         rootPath,
-			JsonApiListenAddr: apiAddr,
+			Name:                        name,
+			StorePath:                   rootPath,
+			JsonApiListenAddr:           apiAddr,
+			NetworkMode:                 networkMode,
+			NetworkCustomConfigFilePath: networkConfigPath,
 		})
 		if err != nil {
 			return fmt.Errorf("account creation failed: %w", err)
@@ -321,9 +330,11 @@ func CreateWallet(name, rootPath, apiAddr string) (string, string, bool, error) 
 	var techSpaceId string
 	err = GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		resp, err := client.AccountSelect(ctx, &pb.RpcAccountSelectRequest{
-			Id:                accountId,
-			JsonApiListenAddr: apiAddr,
-			RootPath:          rootPath,
+			Id:                          accountId,
+			JsonApiListenAddr:           apiAddr,
+			RootPath:                    rootPath,
+			NetworkMode:                 networkMode,
+			NetworkCustomConfigFilePath: networkConfigPath,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to select account: %w", err)
