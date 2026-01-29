@@ -64,6 +64,31 @@ nodes:
 # Keep this running in a terminal or use `service install`
 ```
 
+### Output Verbosity
+
+Control how much the server outputs:
+
+```bash
+# Quiet mode — suppress most output (only fatal errors)
+./dist/anytype serve -q
+
+# Verbose mode — show debug output
+./dist/anytype serve -v
+
+# Default — shows errors only
+./dist/anytype serve
+```
+
+You can also use environment variables:
+
+```bash
+# Custom log levels (module=LEVEL;module=LEVEL;*=DEFAULT)
+ANYTYPE_LOG_LEVEL="*=WARN" ./dist/anytype serve
+
+# Disable telemetry logging
+ANYTYPE_LOG_NOGELF=1 ./dist/anytype serve
+```
+
 ## 5. Join a Space
 
 Generate an invite link from Anytype desktop, then:
