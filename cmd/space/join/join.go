@@ -26,8 +26,17 @@ func NewJoinCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var spaceId string
 
+			// Load network ID: prefer flag, then saved config YAML, then default
 			if networkId == "" {
-				networkId = config.AnytypeNetworkAddress
+				if networkConfigPath, _ := config.GetNetworkConfigPathFromConfig(); networkConfigPath != "" {
+					// Read network ID from the YAML config file
+					if id, err := config.ReadNetworkIdFromYAML(networkConfigPath); err == nil && id != "" {
+						networkId = id
+					}
+				}
+				if networkId == "" {
+					networkId = config.AnytypeNetworkAddress
+				}
 			}
 
 			// If flags are provided directly, use them (self-hosted support)
