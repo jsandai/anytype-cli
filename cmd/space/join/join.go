@@ -20,19 +20,29 @@ func NewJoinCmd() *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "join <invite-link>",
+		Use:   "join [invite-link]",
 		Short: "Join a space",
-		Long:  "Join a space using an invite link (https://invite.any.coop/...)",
-		Args:  cmdutil.ExactArgs(1, "cannot join space: invite-link argument required"),
+		Long:  "Join a space using an invite link (any URL with /{cid}#{key} format) or flags (--invite-cid and --invite-key)",
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			input := args[0]
 			var spaceId string
 
 			if networkId == "" {
 				networkId = config.AnytypeNetworkAddress
 			}
 
-			if strings.HasPrefix(input, "https://invite.any.coop/") {
+			// If flags are provided directly, use them (self-hosted support)
+			if inviteCid != "" && inviteFileKey != "" {
+				info, err := core.ViewSpaceInvite(inviteCid, inviteFileKey)
+				if err != nil {
+					return output.Error("Failed to view invite: %w", err)
+				}
+
+				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
+				spaceId = info.SpaceId
+			} else if len(args) > 0 {
+				// Parse invite link (supports any URL with /{cid}#{key} format)
+				input := args[0]
 				u, err := url.Parse(input)
 				if err != nil {
 					return output.Error("invalid invite link: %w", err)
@@ -57,7 +67,7 @@ func NewJoinCmd() *cobra.Command {
 				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
 				spaceId = info.SpaceId
 			} else {
-				return output.Error("invalid invite link format, expected: https://invite.any.coop/{cid}#{key}")
+				return output.Error("provide an invite link or use --invite-cid and --invite-key flags")
 			}
 
 			if err := core.JoinSpace(networkId, spaceId, inviteCid, inviteFileKey); err != nil {
