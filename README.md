@@ -241,20 +241,47 @@ anytype chat react <chat-id> <message-id> "👍"
 anytype chat read <chat-id>
 ```
 
-#### Example: Simple Chat Bot
+#### Real-Time Subscriptions
+
+Subscribe to a chat for real-time event streaming. Events are pushed to stdout as they occur—no polling required.
+
+```bash
+# Stream events in human-readable format
+anytype chat subscribe <chat-id>
+
+# Output as JSONL for automation
+anytype chat subscribe <chat-id> --json
+
+# Fetch more initial messages
+anytype chat subscribe <chat-id> -n 50
+```
+
+Event types:
+- `add` — New message received
+- `update` — Message content edited
+- `delete` — Message removed
+- `reaction` — Reactions changed
+- `read_status` — Read status updated
+
+#### Example: Chat Bot with Real-Time Events
 
 ```bash
 #!/bin/bash
 CHAT_ID="your-chat-id"
 
-# Monitor and respond (basic polling example)
-while true; do
-  # Get latest messages
-  anytype chat list $CHAT_ID -n 5 --reverse
+# Process events as they arrive
+anytype chat subscribe $CHAT_ID --json | while read -r event; do
+  event_type=$(echo "$event" | jq -r '.type')
   
-  # Your bot logic here...
-  
-  sleep 10
+  if [ "$event_type" = "add" ]; then
+    text=$(echo "$event" | jq -r '.message.text // empty')
+    echo "New message: $text"
+    
+    # Respond to specific keywords
+    if echo "$text" | grep -qi "hello"; then
+      anytype chat send $CHAT_ID "Hello! How can I help?"
+    fi
+  fi
 done
 ```
 

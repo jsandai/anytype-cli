@@ -10,6 +10,7 @@ import (
 	"github.com/anyproto/anytype-cli/cmd/chat/react"
 	"github.com/anyproto/anytype-cli/cmd/chat/read"
 	"github.com/anyproto/anytype-cli/cmd/chat/send"
+	"github.com/anyproto/anytype-cli/cmd/chat/subscribe"
 )
 
 func NewChatCmd() *cobra.Command {
@@ -26,6 +27,7 @@ func NewChatCmd() *cobra.Command {
 	cmd.AddCommand(delete.NewDeleteCmd())
 	cmd.AddCommand(react.NewReactCmd())
 	cmd.AddCommand(read.NewReadCmd())
+	cmd.AddCommand(subscribe.NewSubscribeCmd())
 
 	return cmd
 }

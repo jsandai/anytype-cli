@@ -223,3 +223,183 @@ func MarkChatMessagesRead(chatObjectId string, afterOrderId string, beforeOrderI
 		return nil
 	})
 }
+
+// ChatEventType represents the type of chat event
+type ChatEventType string
+
+const (
+	ChatEventAdd             ChatEventType = "add"
+	ChatEventUpdate          ChatEventType = "update"
+	ChatEventDelete          ChatEventType = "delete"
+	ChatEventReaction        ChatEventType = "reaction"
+	ChatEventReadStatus      ChatEventType = "read_status"
+)
+
+// ChatEvent represents a real-time chat event
+type ChatEvent struct {
+	Type      ChatEventType `json:"type"`
+	MessageID string        `json:"message_id"`
+	Message   *ChatMessage  `json:"message,omitempty"`
+	IsRead    bool          `json:"is_read,omitempty"`
+}
+
+// ChatSubscription holds the state for an active chat subscription
+type ChatSubscription struct {
+	ChatObjectID string
+	SubID        string
+	Messages     []ChatMessage
+}
+
+// SubscribeToChatMessages subscribes to a chat and returns initial messages.
+// The subscription is registered with the server using the provided subId.
+// Use the returned subId with ListenForEvents to receive real-time updates,
+// and call UnsubscribeFromChat when done.
+func SubscribeToChatMessages(chatObjectId string, subId string, limit int32) (*ChatSubscription, error) {
+	sub := &ChatSubscription{
+		ChatObjectID: chatObjectId,
+		SubID:        subId,
+	}
+
+	err := GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		req := &pb.RpcChatSubscribeLastMessagesRequest{
+			ChatObjectId: chatObjectId,
+			Limit:        limit,
+			SubId:        subId,
+		}
+		resp, err := client.ChatSubscribeLastMessages(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to subscribe to chat: %w", err)
+		}
+		if resp.Error != nil && resp.Error.Code != pb.RpcChatSubscribeLastMessagesResponseError_NULL {
+			return fmt.Errorf("subscribe error: %s", resp.Error.Description)
+		}
+
+		for _, m := range resp.Messages {
+			sub.Messages = append(sub.Messages, parseChatMessage(m))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return sub, nil
+}
+
+// UnsubscribeFromChat removes a chat subscription
+func UnsubscribeFromChat(subId string) error {
+	return GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		req := &pb.RpcChatUnsubscribeRequest{
+			SubId: subId,
+		}
+		resp, err := client.ChatUnsubscribe(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to unsubscribe: %w", err)
+		}
+		if resp.Error != nil && resp.Error.Code != pb.RpcChatUnsubscribeResponseError_NULL {
+			return fmt.Errorf("unsubscribe error: %s", resp.Error.Description)
+		}
+		return nil
+	})
+}
+
+// ParseChatEvent extracts a ChatEvent from an EventMessage if it's a chat event
+// matching the given subscription ID. Returns nil if not a matching chat event.
+func ParseChatEvent(msg *pb.EventMessage, subId string) *ChatEvent {
+	// Check for Add event
+	if add := msg.GetChatAdd(); add != nil {
+		if !containsSubId(add.SubIds, subId) {
+			return nil
+		}
+		var chatMsg *ChatMessage
+		if add.Message != nil {
+			parsed := parseChatMessage(add.Message)
+			chatMsg = &parsed
+		}
+		return &ChatEvent{
+			Type:      ChatEventAdd,
+			MessageID: add.Id,
+			Message:   chatMsg,
+		}
+	}
+
+	// Check for Update event
+	if upd := msg.GetChatUpdate(); upd != nil {
+		if !containsSubId(upd.SubIds, subId) {
+			return nil
+		}
+		var chatMsg *ChatMessage
+		if upd.Message != nil {
+			parsed := parseChatMessage(upd.Message)
+			chatMsg = &parsed
+		}
+		return &ChatEvent{
+			Type:      ChatEventUpdate,
+			MessageID: upd.Id,
+			Message:   chatMsg,
+		}
+	}
+
+	// Check for Delete event
+	if del := msg.GetChatDelete(); del != nil {
+		if !containsSubId(del.SubIds, subId) {
+			return nil
+		}
+		return &ChatEvent{
+			Type:      ChatEventDelete,
+			MessageID: del.Id,
+		}
+	}
+
+	// Check for Reaction update event
+	if react := msg.GetChatUpdateReactions(); react != nil {
+		if !containsSubId(react.SubIds, subId) {
+			return nil
+		}
+		// Build a partial message with just reactions
+		var chatMsg *ChatMessage
+		if react.Reactions != nil {
+			chatMsg = &ChatMessage{
+				ID:        react.Id,
+				Reactions: make(map[string][]string),
+			}
+			for emoji, identList := range react.Reactions.Reactions {
+				chatMsg.Reactions[emoji] = identList.Ids
+			}
+		}
+		return &ChatEvent{
+			Type:      ChatEventReaction,
+			MessageID: react.Id,
+			Message:   chatMsg,
+		}
+	}
+
+	// Check for Read status update
+	if read := msg.GetChatUpdateMessageReadStatus(); read != nil {
+		if !containsSubId(read.SubIds, subId) {
+			return nil
+		}
+		// Read status applies to multiple messages; return first ID
+		msgId := ""
+		if len(read.Ids) > 0 {
+			msgId = read.Ids[0]
+		}
+		return &ChatEvent{
+			Type:      ChatEventReadStatus,
+			MessageID: msgId,
+			IsRead:    read.IsRead,
+		}
+	}
+
+	return nil
+}
+
+// containsSubId checks if the subscription ID is in the list
+func containsSubId(subIds []string, target string) bool {
+	for _, id := range subIds {
+		if id == target {
+			return true
+		}
+	}
+	return false
+}
