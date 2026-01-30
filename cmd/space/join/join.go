@@ -22,7 +22,7 @@ func NewJoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "join <invite-link>",
 		Short: "Join a space",
-		Long:  "Join a space using an invite link (https://invite.any.coop/...)",
+		Long:  "Join a space using an invite link (https://invite.any.coop/... or anytype://invite/?cid=...&key=...)",
 		Args:  cmdutil.ExactArgs(1, "cannot join space: invite-link argument required"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			input := args[0]
@@ -65,8 +65,33 @@ func NewJoinCmd() *cobra.Command {
 
 				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
 				spaceId = info.SpaceId
+			} else if strings.HasPrefix(input, "anytype://invite/") {
+				// Handle anytype://invite/?cid=...&key=... format
+				u, err := url.Parse(input)
+				if err != nil {
+					return output.Error("invalid invite link: %w", err)
+				}
+
+				query := u.Query()
+				inviteCid = query.Get("cid")
+				if inviteCid == "" {
+					return output.Error("invite link missing cid parameter")
+				}
+
+				inviteFileKey = query.Get("key")
+				if inviteFileKey == "" {
+					return output.Error("invite link missing key parameter")
+				}
+
+				info, err := core.ViewSpaceInvite(inviteCid, inviteFileKey)
+				if err != nil {
+					return output.Error("Failed to view invite: %w", err)
+				}
+
+				output.Info("Joining space '%s' created by %s...", info.SpaceName, info.CreatorName)
+				spaceId = info.SpaceId
 			} else {
-				return output.Error("invalid invite link format, expected: https://invite.any.coop/{cid}#{key}")
+				return output.Error("invalid invite link format, expected: https://invite.any.coop/{cid}#{key} or anytype://invite/?cid={cid}&key={key}")
 			}
 
 			if err := core.JoinSpace(networkId, spaceId, inviteCid, inviteFileKey); err != nil {
