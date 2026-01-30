@@ -7,6 +7,7 @@ import (
 	objectDeleteCmd "github.com/anyproto/anytype-cli/cmd/object/delete"
 	objectGetCmd "github.com/anyproto/anytype-cli/cmd/object/get"
 	objectSearchCmd "github.com/anyproto/anytype-cli/cmd/object/search"
+	objectSetContentCmd "github.com/anyproto/anytype-cli/cmd/object/setcontent"
 	objectUpdateCmd "github.com/anyproto/anytype-cli/cmd/object/update"
 )
 
@@ -22,6 +23,7 @@ func NewObjectCmd() *cobra.Command {
 	cmd.AddCommand(objectGetCmd.NewGetCmd())
 	cmd.AddCommand(objectUpdateCmd.NewUpdateCmd())
 	cmd.AddCommand(objectDeleteCmd.NewDeleteCmd())
+	cmd.AddCommand(objectSetContentCmd.NewSetContentCmd())
 
 	return cmd
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/anyproto/anytype-heart/core/block/import/markdown/anymark"
 	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
@@ -303,4 +304,57 @@ func extractValue(val *types.Value) interface{} {
 	default:
 		return nil
 	}
+}
+
+// SetObjectContent sets the content of an object using markdown
+// The markdown is converted to Anytype blocks using anymark
+func SetObjectContent(spaceID string, objectID string, markdown string) error {
+	return GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		// Convert markdown to Anytype blocks
+		blocks, _, err := anymark.MarkdownToBlocks([]byte(markdown), "", []string{})
+		if err != nil {
+			return fmt.Errorf("failed to convert markdown to blocks: %w", err)
+		}
+
+		if len(blocks) == 0 {
+			return fmt.Errorf("no blocks generated from markdown")
+		}
+
+		// Open the object first to ensure it's accessible
+		openReq := &pb.RpcObjectOpenRequest{
+			SpaceId:  spaceID,
+			ObjectId: objectID,
+		}
+
+		openResp, err := client.ObjectOpen(ctx, openReq)
+		if err != nil {
+			return fmt.Errorf("failed to open object: %w", err)
+		}
+		if openResp.Error != nil && openResp.Error.Code != pb.RpcObjectOpenResponseError_NULL {
+			return fmt.Errorf("open object error: %s", openResp.Error.Description)
+		}
+
+		// Paste the blocks into the object
+		pasteReq := &pb.RpcBlockPasteRequest{
+			ContextId: objectID,
+			AnySlot:   blocks,
+		}
+
+		pasteResp, err := client.BlockPaste(ctx, pasteReq)
+		if err != nil {
+			return fmt.Errorf("failed to paste blocks: %w", err)
+		}
+		if pasteResp.Error != nil && pasteResp.Error.Code != pb.RpcBlockPasteResponseError_NULL {
+			return fmt.Errorf("paste error: %s", pasteResp.Error.Description)
+		}
+
+		// Close the object
+		closeReq := &pb.RpcObjectCloseRequest{
+			SpaceId:  spaceID,
+			ObjectId: objectID,
+		}
+		_, _ = client.ObjectClose(ctx, closeReq)
+
+		return nil
+	})
 }

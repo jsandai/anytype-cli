@@ -97,13 +97,25 @@ Event types:
 			}()
 
 			// Print initial messages if any
-			if len(sub.Messages) > 0 && !jsonOutput {
-				output.Info("=== Recent messages ===")
-				for _, msg := range sub.Messages {
-					printMessage(msg)
+			if len(sub.Messages) > 0 {
+				if jsonOutput {
+					// Output initial messages as "add" events in JSON mode
+					for _, msg := range sub.Messages {
+						event := &core.ChatEvent{
+							Type:      core.ChatEventAdd,
+							MessageID: msg.ID,
+							Message:   &msg,
+						}
+						printEventJSON(event)
+					}
+				} else {
+					output.Info("=== Recent messages ===")
+					for _, msg := range sub.Messages {
+						printMessage(msg)
+					}
+					output.Info("=== Listening for new events (Ctrl+C to stop) ===")
+					output.Info("")
 				}
-				output.Info("=== Listening for new events (Ctrl+C to stop) ===")
-				output.Info("")
 			} else if !jsonOutput {
 				output.Info("Listening for events on chat %s (Ctrl+C to stop)...", chatId)
 				output.Info("")
