@@ -11,20 +11,38 @@ import (
 	"github.com/anyproto/anytype-heart/util/pbtypes"
 )
 
+// ChatMessageAttachmentInfo represents attachment info for display
+type ChatMessageAttachmentInfo struct {
+	ObjectId string
+	Type     string // "file", "image", "link"
+}
+
 // ChatMessage represents a chat message for display
 type ChatMessage struct {
-	ID        string
-	OrderID   string
-	Creator   string
-	Text      string
-	CreatedAt time.Time
-	Reactions map[string][]string // emoji -> user IDs
-	ReplyTo   string
-	Read      bool
+	ID          string
+	OrderID     string
+	Creator     string
+	Text        string
+	CreatedAt   time.Time
+	Reactions   map[string][]string // emoji -> user IDs
+	ReplyTo     string
+	Read        bool
+	Attachments []ChatMessageAttachmentInfo
+}
+
+// ChatAttachment represents an attachment to add to a message
+type ChatAttachment struct {
+	ObjectId string
+	Type     model.ChatMessageAttachmentAttachmentType
 }
 
 // SendChatMessage sends a message to a chat object
 func SendChatMessage(chatObjectId string, text string, replyToMsgId string) (string, error) {
+	return SendChatMessageWithAttachments(chatObjectId, text, replyToMsgId, nil)
+}
+
+// SendChatMessageWithAttachments sends a message with optional attachments
+func SendChatMessageWithAttachments(chatObjectId string, text string, replyToMsgId string, attachments []ChatAttachment) (string, error) {
 	var msgId string
 	err := GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
 		msg := &model.ChatMessage{
@@ -34,6 +52,17 @@ func SendChatMessage(chatObjectId string, text string, replyToMsgId string) (str
 		}
 		if replyToMsgId != "" {
 			msg.ReplyToMessageId = replyToMsgId
+		}
+
+		// Add attachments
+		if len(attachments) > 0 {
+			msg.Attachments = make([]*model.ChatMessageAttachment, len(attachments))
+			for i, att := range attachments {
+				msg.Attachments[i] = &model.ChatMessageAttachment{
+					Target: att.ObjectId,
+					Type:   att.Type,
+				}
+			}
 		}
 
 		req := &pb.RpcChatAddMessageRequest{
@@ -51,6 +80,16 @@ func SendChatMessage(chatObjectId string, text string, replyToMsgId string) (str
 		return nil
 	})
 	return msgId, err
+}
+
+// DetectAttachmentType returns the appropriate attachment type based on file type
+func DetectAttachmentType(fileType model.BlockContentFileType) model.ChatMessageAttachmentAttachmentType {
+	switch fileType {
+	case model.BlockContentFile_Image:
+		return model.ChatMessageAttachment_IMAGE
+	default:
+		return model.ChatMessageAttachment_FILE
+	}
 }
 
 // GetChatMessages retrieves messages from a chat object
@@ -87,6 +126,23 @@ func GetChatMessages(chatObjectId string, limit int32, beforeOrderId string, aft
 				msg.Reactions = make(map[string][]string)
 				for emoji, identList := range m.Reactions.Reactions {
 					msg.Reactions[emoji] = identList.Ids
+				}
+			}
+			// Extract attachments
+			if len(m.Attachments) > 0 {
+				msg.Attachments = make([]ChatMessageAttachmentInfo, len(m.Attachments))
+				for i, att := range m.Attachments {
+					attType := "file"
+					switch att.Type {
+					case model.ChatMessageAttachment_IMAGE:
+						attType = "image"
+					case model.ChatMessageAttachment_LINK:
+						attType = "link"
+					}
+					msg.Attachments[i] = ChatMessageAttachmentInfo{
+						ObjectId: att.Target,
+						Type:     attType,
+					}
 				}
 			}
 			messages = append(messages, msg)
