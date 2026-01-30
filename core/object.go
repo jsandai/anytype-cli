@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/anyproto/anytype-heart/core/block/import/markdown/anymark"
 	"github.com/anyproto/anytype-heart/pb"
 	"github.com/anyproto/anytype-heart/pb/service"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
@@ -303,4 +304,91 @@ func extractValue(val *types.Value) interface{} {
 	default:
 		return nil
 	}
+}
+
+// SetObjectContentRequest contains parameters for setting object content
+type SetObjectContentRequest struct {
+	SpaceID  string
+	ObjectID string
+	Markdown string // Markdown content to convert to blocks
+}
+
+// SetObjectContentResult contains the result of setting object content
+type SetObjectContentResult struct {
+	BlockIDs []string
+}
+
+// SetObjectContent sets the body content of an object from markdown
+// This converts markdown to Anytype blocks and pastes them into the object
+func SetObjectContent(req SetObjectContentRequest) (*SetObjectContentResult, error) {
+	var result *SetObjectContentResult
+
+	err := GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		// First, open the object to get context
+		openReq := &pb.RpcObjectOpenRequest{
+			SpaceId:  req.SpaceID,
+			ObjectId: req.ObjectID,
+		}
+
+		openResp, err := client.ObjectOpen(ctx, openReq)
+		if err != nil {
+			return fmt.Errorf("failed to open object: %w", err)
+		}
+		if openResp.Error != nil && openResp.Error.Code != pb.RpcObjectOpenResponseError_NULL {
+			return fmt.Errorf("open object error: %s", openResp.Error.Description)
+		}
+
+		// Convert markdown to blocks using anytype's built-in converter
+		blocks, _, err := anymark.MarkdownToBlocks([]byte(req.Markdown), "", []string{})
+		if err != nil {
+			// Close object before returning error
+			closeReq := &pb.RpcObjectCloseRequest{
+				SpaceId:  req.SpaceID,
+				ObjectId: req.ObjectID,
+			}
+			_, _ = client.ObjectClose(ctx, closeReq)
+			return fmt.Errorf("failed to convert markdown to blocks: %w", err)
+		}
+
+		// Paste the blocks into the object
+		pasteReq := &pb.RpcBlockPasteRequest{
+			ContextId: req.ObjectID,
+			AnySlot:   blocks,
+		}
+
+		pasteResp, err := client.BlockPaste(ctx, pasteReq)
+		if err != nil {
+			// Close object before returning error
+			closeReq := &pb.RpcObjectCloseRequest{
+				SpaceId:  req.SpaceID,
+				ObjectId: req.ObjectID,
+			}
+			_, _ = client.ObjectClose(ctx, closeReq)
+			return fmt.Errorf("failed to paste blocks: %w", err)
+		}
+		if pasteResp.Error != nil && pasteResp.Error.Code != pb.RpcBlockPasteResponseError_NULL {
+			// Close object before returning error
+			closeReq := &pb.RpcObjectCloseRequest{
+				SpaceId:  req.SpaceID,
+				ObjectId: req.ObjectID,
+			}
+			_, _ = client.ObjectClose(ctx, closeReq)
+			return fmt.Errorf("paste blocks error: %s", pasteResp.Error.Description)
+		}
+
+		result = &SetObjectContentResult{
+			BlockIDs: pasteResp.BlockIds,
+		}
+
+		// Close the object
+		closeReq := &pb.RpcObjectCloseRequest{
+			SpaceId:  req.SpaceID,
+			ObjectId: req.ObjectID,
+		}
+		_, _ = client.ObjectClose(ctx, closeReq)
+
+		return nil
+	})
+
+	return result, err
 }
