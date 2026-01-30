@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -73,7 +74,7 @@ func runUpload(cmd *cobra.Command, args []string) error {
 	} else {
 		// Expand ~ and make absolute
 		path := pathOrURL
-		if path[:2] == "~/" {
+		if strings.HasPrefix(path, "~/") {
 			home, _ := os.UserHomeDir()
 			path = filepath.Join(home, path[2:])
 		}

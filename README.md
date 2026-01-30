@@ -12,6 +12,8 @@ A command-line interface for interacting with [Anytype](https://github.com/anypr
   - [Authentication](#authentication)
   - [API Keys](#api-keys)
   - [Space Management](#space-management)
+  - [Chat](#chat)
+  - [Files](#files)
 - [Development](#development)
   - [Project Structure](#project-structure)
   - [Building from Source](#building-from-source)
@@ -179,6 +181,71 @@ anytype space join <invite-link>
 # Leave a space
 anytype space leave <space-id>
 ```
+
+### Chat
+
+Send and receive messages in Anytype chat objects:
+
+```bash
+# Find the chat object ID for a space
+anytype chat find <space-id>
+
+# Send a message
+anytype chat send <chat-id> "Hello from CLI!"
+
+# Send a reply
+anytype chat send <chat-id> "This is a reply" --reply-to <message-id>
+
+# List recent messages
+anytype chat list <chat-id>
+anytype chat list <chat-id> -n 50  # Get last 50 messages
+
+# Edit a message
+anytype chat edit <chat-id> <message-id> "Updated text"
+
+# Delete a message
+anytype chat delete <chat-id> <message-id>
+
+# React to a message
+anytype chat react <chat-id> <message-id> 👍
+```
+
+#### Sending Messages with Attachments
+
+```bash
+# Upload a file first, then attach by object ID
+anytype file upload <space-id> /path/to/image.png
+# Returns: Object ID: bafyrei...
+anytype chat send <chat-id> "Check this out" --attach <object-id>
+
+# Or upload and attach in one command
+anytype chat send <chat-id> "Here's the file" --file /path/to/doc.pdf --space <space-id>
+
+# Multiple attachments
+anytype chat send <chat-id> "Multiple files" --file a.png --file b.jpg --space <space-id>
+```
+
+### Files
+
+Upload and download files from Anytype:
+
+```bash
+# Upload a local file
+anytype file upload <space-id> /path/to/file.png
+# Returns the object ID for use with --attach
+
+# Upload from URL
+anytype file upload <space-id> https://example.com/image.png --url
+
+# Specify file type explicitly (auto-detected by default)
+anytype file upload <space-id> /path/to/file --type image
+
+# Download a file
+anytype file download <object-id> /path/to/destination.png
+anytype file download <object-id> ~/Downloads/  # Uses original filename
+```
+
+Supported file types for `--type`: `image`, `audio`, `video`, `pdf`, `file`
 
 ## Development
 
