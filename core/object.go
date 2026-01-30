@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/anyproto/anytype-heart/core/block/import/markdown/anymark"
@@ -303,6 +304,168 @@ func extractValue(val *types.Value) interface{} {
 		return m
 	default:
 		return nil
+	}
+}
+
+// GetObjectContent retrieves the content of an object as text/markdown
+func GetObjectContent(spaceID string, objectID string) (string, error) {
+	var content string
+
+	err := GRPCCall(func(ctx context.Context, client service.ClientCommandsClient) error {
+		// Open the object to get its blocks
+		openReq := &pb.RpcObjectOpenRequest{
+			SpaceId:  spaceID,
+			ObjectId: objectID,
+		}
+
+		openResp, err := client.ObjectOpen(ctx, openReq)
+		if err != nil {
+			return fmt.Errorf("failed to open object: %w", err)
+		}
+		if openResp.Error != nil && openResp.Error.Code != pb.RpcObjectOpenResponseError_NULL {
+			return fmt.Errorf("open object error: %s", openResp.Error.Description)
+		}
+
+		// Extract text content from blocks
+		if openResp.ObjectView != nil && openResp.ObjectView.Blocks != nil {
+			content = blocksToText(openResp.ObjectView.Blocks, openResp.ObjectView.RootId)
+		}
+
+		// Close the object
+		closeReq := &pb.RpcObjectCloseRequest{
+			SpaceId:  spaceID,
+			ObjectId: objectID,
+		}
+		_, _ = client.ObjectClose(ctx, closeReq)
+
+		return nil
+	})
+
+	return content, err
+}
+
+// blocksToText converts Anytype blocks to readable text/markdown
+func blocksToText(blocks []*model.Block, rootID string) string {
+	// Build a map for quick lookup
+	blockMap := make(map[string]*model.Block)
+	for _, b := range blocks {
+		blockMap[b.Id] = b
+	}
+
+	// Find root block and traverse children
+	var result strings.Builder
+	if root, ok := blockMap[rootID]; ok {
+		renderBlockTree(&result, blockMap, root, 0)
+	}
+
+	return strings.TrimSpace(result.String())
+}
+
+// renderBlockTree recursively renders a block and its children
+func renderBlockTree(w *strings.Builder, blockMap map[string]*model.Block, block *model.Block, depth int) {
+	// Render this block's content
+	renderBlock(w, block, depth)
+
+	// Render children
+	for _, childID := range block.ChildrenIds {
+		if child, ok := blockMap[childID]; ok {
+			renderBlockTree(w, blockMap, child, depth)
+		}
+	}
+}
+
+// renderBlock renders a single block to text/markdown
+func renderBlock(w *strings.Builder, block *model.Block, depth int) {
+	if block == nil {
+		return
+	}
+
+	switch c := block.Content.(type) {
+	case *model.BlockContentOfText:
+		if c.Text != nil {
+			text := c.Text.Text
+			style := c.Text.Style
+
+			switch style {
+			case model.BlockContentText_Header1:
+				w.WriteString("# ")
+				w.WriteString(text)
+				w.WriteString("\n\n")
+			case model.BlockContentText_Header2:
+				w.WriteString("## ")
+				w.WriteString(text)
+				w.WriteString("\n\n")
+			case model.BlockContentText_Header3:
+				w.WriteString("### ")
+				w.WriteString(text)
+				w.WriteString("\n\n")
+			case model.BlockContentText_Header4:
+				w.WriteString("#### ")
+				w.WriteString(text)
+				w.WriteString("\n\n")
+			case model.BlockContentText_Quote:
+				w.WriteString("> ")
+				w.WriteString(text)
+				w.WriteString("\n\n")
+			case model.BlockContentText_Code:
+				w.WriteString("```\n")
+				w.WriteString(text)
+				w.WriteString("\n```\n\n")
+			case model.BlockContentText_Marked:
+				w.WriteString("- ")
+				w.WriteString(text)
+				w.WriteString("\n")
+			case model.BlockContentText_Numbered:
+				w.WriteString("1. ")
+				w.WriteString(text)
+				w.WriteString("\n")
+			case model.BlockContentText_Toggle:
+				w.WriteString("- ")
+				w.WriteString(text)
+				w.WriteString("\n")
+			case model.BlockContentText_Checkbox:
+				if c.Text.Checked {
+					w.WriteString("- [x] ")
+				} else {
+					w.WriteString("- [ ] ")
+				}
+				w.WriteString(text)
+				w.WriteString("\n")
+			default:
+				// Regular paragraph
+				if text != "" {
+					w.WriteString(text)
+					w.WriteString("\n\n")
+				}
+			}
+		}
+	case *model.BlockContentOfDiv:
+		// Divider
+		w.WriteString("---\n\n")
+	case *model.BlockContentOfBookmark:
+		if c.Bookmark != nil && c.Bookmark.Url != "" {
+			w.WriteString("[")
+			if c.Bookmark.Title != "" {
+				w.WriteString(c.Bookmark.Title)
+			} else {
+				w.WriteString(c.Bookmark.Url)
+			}
+			w.WriteString("](")
+			w.WriteString(c.Bookmark.Url)
+			w.WriteString(")\n\n")
+		}
+	case *model.BlockContentOfLink:
+		if c.Link != nil && c.Link.TargetBlockId != "" {
+			w.WriteString("[[")
+			w.WriteString(c.Link.TargetBlockId)
+			w.WriteString("]]\n")
+		}
+	case *model.BlockContentOfFile:
+		if c.File != nil && c.File.Name != "" {
+			w.WriteString("📎 ")
+			w.WriteString(c.File.Name)
+			w.WriteString("\n")
+		}
 	}
 }
 
