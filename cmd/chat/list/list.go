@@ -52,6 +52,12 @@ func NewListCmd() *cobra.Command {
 				output.Info("%s [%s] %s:", readMark, timestamp, msg.Creator)
 				output.Info("   %s", msg.Text)
 
+				if len(msg.Attachments) > 0 {
+					for _, att := range msg.Attachments {
+						output.Info("   📎 %s (%s)", att.ObjectId, att.Type)
+					}
+				}
+
 				if len(msg.Reactions) > 0 {
 					reactionStr := "   Reactions:"
 					for emoji, users := range msg.Reactions {
