@@ -62,20 +62,30 @@ anytype <command> <subcommand> [flags]
 
 Commands:
   auth        Manage authentication and accounts
+  chat        Chat messaging operations
+  config      Manage configuration
+  file        Upload and download files
+  object      Create, search, and manage objects
+  relation    Manage relations
   serve       Run anytype in foreground
   service     Manage anytype as a user service
   shell       Start interactive shell mode
   space       Manage spaces
+  type        Manage types
   update      Update to the latest version
   version     Show version information
 
 Examples:
   anytype serve                     # Run in foreground
+  anytype serve --quiet             # Run with minimal output
+  anytype serve --verbose           # Run with detailed logging
   anytype service install           # Install as user service
   anytype service start             # Start the service
   anytype auth login                # Log in to your account
   anytype auth create <name>        # Create a new account
   anytype space list                # List all available spaces
+  anytype chat list <chat-id>       # List messages in a chat
+  anytype object search <space-id>  # Search objects
 
 Use "anytype <command> --help" for more information about a command.
 ```
@@ -91,6 +101,12 @@ anytype serve
 ```
 
 This runs the server in the foreground with logs output to stdout, similar to `ollama serve`.
+
+**Verbosity options:**
+```bash
+anytype serve --quiet    # Suppress startup messages
+anytype serve --verbose  # Show detailed logging
+```
 
 #### 2. User Service (for production)
 
@@ -283,6 +299,68 @@ anytype chat subscribe $CHAT_ID --json | while read -r event; do
     fi
   fi
 done
+```
+
+### File Operations
+
+Upload and download files to/from Anytype spaces.
+
+```bash
+# Upload a file to a space
+anytype file upload <space-id> /path/to/file.png
+
+# Download a file by object ID
+anytype file download <object-id> /path/to/output.png
+
+# Send a chat message with an attachment
+anytype chat send <chat-id> "Check this out" --file /path/to/image.png
+```
+
+### Object Operations
+
+Create, search, and manage objects in your spaces.
+
+```bash
+# Search for objects in a space
+anytype object search <space-id>
+anytype object search <space-id> --query "meeting notes"
+anytype object search <space-id> --type <type-id>
+
+# Get object details
+anytype object get <object-id>
+
+# Create a new object
+anytype object create <space-id> --type <type-id> --name "My Object"
+
+# Update an object
+anytype object update <object-id> --name "New Name"
+
+# Delete an object
+anytype object delete <object-id>
+```
+
+### Type Operations
+
+Manage types (object schemas) in your spaces.
+
+```bash
+# List all types in a space
+anytype type list <space-id>
+
+# Create a new type
+anytype type create <space-id> --name "Task" --icon "✅"
+```
+
+### Relation Operations
+
+Manage relations (properties) in your spaces.
+
+```bash
+# List all relations in a space
+anytype relation list <space-id>
+
+# Create a new relation
+anytype relation create <space-id> --name "Priority" --type "select"
 ```
 
 ## Development

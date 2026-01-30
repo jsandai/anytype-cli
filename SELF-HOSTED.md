@@ -15,7 +15,7 @@ The upstream `anytype-cli` doesn't fully support self-hosted networks. Use this 
 ```bash
 git clone https://github.com/jsandai/anytype-cli.git
 cd anytype-cli
-git checkout feat/network-config
+git checkout release
 make build
 ```
 
