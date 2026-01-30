@@ -12,10 +12,13 @@ import (
 	"github.com/anyproto/anytype-cli/cmd/chat"
 	"github.com/anyproto/anytype-cli/cmd/config"
 	"github.com/anyproto/anytype-cli/cmd/file"
+	"github.com/anyproto/anytype-cli/cmd/object"
+	"github.com/anyproto/anytype-cli/cmd/relation"
 	"github.com/anyproto/anytype-cli/cmd/serve"
 	"github.com/anyproto/anytype-cli/cmd/service"
 	"github.com/anyproto/anytype-cli/cmd/shell"
 	"github.com/anyproto/anytype-cli/cmd/space"
+	typecmd "github.com/anyproto/anytype-cli/cmd/type"
 	"github.com/anyproto/anytype-cli/cmd/update"
 	"github.com/anyproto/anytype-cli/cmd/version"
 )
@@ -55,10 +58,13 @@ func init() {
 		chat.NewChatCmd(),
 		config.NewConfigCmd(),
 		file.NewFileCmd(),
+		object.NewObjectCmd(),
+		relation.NewRelationCmd(),
 		serve.NewServeCmd(),
 		service.NewServiceCmd(),
 		shell.NewShellCmd(rootCmd),
 		space.NewSpaceCmd(),
+		typecmd.NewTypeCmd(),
 		update.NewUpdateCmd(),
 		version.NewVersionCmd(),
 	)
