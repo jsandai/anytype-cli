@@ -180,6 +180,84 @@ anytype space join <invite-link>
 anytype space leave <space-id>
 ```
 
+### Chat Operations
+
+Chat support enables programmatic interaction with Anytype's messaging feature. This unlocks powerful automation possibilities: build chat bots, create notification integrations, archive conversations, or bridge Anytype chats with other platforms—all through the command line.
+
+#### Getting Started
+
+First, discover chat objects in your space:
+
+```bash
+# Get your space ID
+anytype space list
+
+# Find all chat objects in the space
+anytype chat find <space-id>
+```
+
+This displays a table of chat objects with their Chat IDs, names, and Object IDs. Use the Chat ID for subsequent commands.
+
+#### Sending Messages
+
+```bash
+# Send a simple message
+anytype chat send <chat-id> "Hello from the CLI!"
+
+# Reply to a specific message
+anytype chat send <chat-id> "Thanks for the info" --reply-to <message-id>
+```
+
+#### Reading Messages
+
+```bash
+# List recent messages (default: 20)
+anytype chat list <chat-id>
+
+# Get more messages
+anytype chat list <chat-id> -n 50
+
+# Show newest first
+anytype chat list <chat-id> --reverse
+
+# Pagination: get messages before/after a specific point
+anytype chat list <chat-id> --before <order-id>
+anytype chat list <chat-id> --after <order-id>
+```
+
+#### Managing Messages
+
+```bash
+# Edit a message you sent
+anytype chat edit <chat-id> <message-id> "Updated text"
+
+# Delete a message
+anytype chat delete <chat-id> <message-id>
+
+# Add or remove a reaction
+anytype chat react <chat-id> <message-id> "👍"
+
+# Mark messages as read
+anytype chat read <chat-id>
+```
+
+#### Example: Simple Chat Bot
+
+```bash
+#!/bin/bash
+CHAT_ID="your-chat-id"
+
+# Monitor and respond (basic polling example)
+while true; do
+  # Get latest messages
+  anytype chat list $CHAT_ID -n 5 --reverse
+  
+  # Your bot logic here...
+  
+  sleep 10
+done
+```
+
 ## Development
 
 ### Project Structure
