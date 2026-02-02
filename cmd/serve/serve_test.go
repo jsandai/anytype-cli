@@ -92,11 +92,11 @@ func TestServeCmd_QuietAndVerboseMutuallyExclusive(t *testing.T) {
 
 	err := cmd.Execute()
 	if err == nil {
-		t.Error("expected error when using --quiet and --verbose together, got nil")
+		t.Fatal("expected error when using --quiet and --verbose together, got nil")
 	}
 
-	expectedMsg := "cannot use --quiet and --verbose together"
+	expectedMsg := "if any flags in the group [quiet verbose] are set none of the others can be; [quiet verbose] were all set"
 	if err.Error() != expectedMsg {
-		t.Errorf("error message = %v, want %v", err.Error(), expectedMsg)
+		t.Errorf("error message = %q, want %q", err.Error(), expectedMsg)
 	}
 }

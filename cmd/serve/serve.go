@@ -29,22 +29,20 @@ func NewServeCmd() *cobra.Command {
 	cmd.Flags().StringVar(&listenAddress, "listen-address", config.DefaultAPIAddress, "API listen address in `host:port` format")
 	cmd.Flags().BoolVarP(&quietMode, "quiet", "q", false, "Suppress most output (only errors)")
 	cmd.Flags().BoolVarP(&verboseMode, "verbose", "v", false, "Show detailed output (debug level)")
+	cmd.MarkFlagsMutuallyExclusive("quiet", "verbose")
 
 	return cmd
 }
 
 func runServer(cmd *cobra.Command, args []string) error {
-	// Configure log level based on flags (before server starts)
-	if quietMode && verboseMode {
-		return output.Error("cannot use --quiet and --verbose together")
-	}
+	// Configure anytype-heart log level via environment variables (must be set before server starts)
 	if quietMode {
 		os.Setenv("ANYTYPE_LOG_LEVEL", "*=FATAL")
 		os.Setenv("ANYTYPE_LOG_NOGELF", "1")
 	} else if verboseMode {
 		os.Setenv("ANYTYPE_LOG_LEVEL", "*=DEBUG")
 	}
-	// Default (ERROR) is set in grpcserver/server.go if not specified
+	// Default log level (ERROR) is set in grpcserver/server.go if not specified
 
 	svcConfig := &service.Config{
 		Name:        "anytype",
