@@ -51,3 +51,52 @@ func TestServeCmd_ListenAddressFlagCustomValue(t *testing.T) {
 		t.Errorf("listen-address value = %v, want %v", flag.Value.String(), customAddr)
 	}
 }
+
+func TestServeCmd_QuietFlag(t *testing.T) {
+	cmd := NewServeCmd()
+
+	flag := cmd.Flag("quiet")
+	if flag == nil {
+		t.Fatal("quiet flag not found")
+	}
+
+	if flag.Shorthand != "q" {
+		t.Errorf("quiet shorthand = %v, want q", flag.Shorthand)
+	}
+
+	if flag.DefValue != "false" {
+		t.Errorf("quiet default = %v, want false", flag.DefValue)
+	}
+}
+
+func TestServeCmd_VerboseFlag(t *testing.T) {
+	cmd := NewServeCmd()
+
+	flag := cmd.Flag("verbose")
+	if flag == nil {
+		t.Fatal("verbose flag not found")
+	}
+
+	if flag.Shorthand != "v" {
+		t.Errorf("verbose shorthand = %v, want v", flag.Shorthand)
+	}
+
+	if flag.DefValue != "false" {
+		t.Errorf("verbose default = %v, want false", flag.DefValue)
+	}
+}
+
+func TestServeCmd_QuietAndVerboseMutuallyExclusive(t *testing.T) {
+	cmd := NewServeCmd()
+	cmd.SetArgs([]string{"--quiet", "--verbose"})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Error("expected error when using --quiet and --verbose together, got nil")
+	}
+
+	expectedMsg := "cannot use --quiet and --verbose together"
+	if err.Error() != expectedMsg {
+		t.Errorf("error message = %v, want %v", err.Error(), expectedMsg)
+	}
+}
