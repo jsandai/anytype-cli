@@ -147,7 +147,6 @@ func SetNetworkIdToConfig(networkId string) error {
 	return configMgr.SetNetworkId(networkId)
 }
 
-// ReadNetworkIdFromYAML reads the networkId field from a network config YAML file
 func ReadNetworkIdFromYAML(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

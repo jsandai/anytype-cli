@@ -17,8 +17,7 @@ import (
 	"github.com/anyproto/anytype-cli/core/output"
 )
 
-// determineNetworkMode returns the appropriate network mode based on whether a custom network config is provided.
-func determineNetworkMode(networkConfigPath string) pb.RpcAccount_NetworkMode {
+func determineNetworkMode(networkConfigPath string) pb.RpcAccountNetworkMode {
 	if networkConfigPath != "" {
 		return pb.RpcAccount_CustomConfig
 	}
