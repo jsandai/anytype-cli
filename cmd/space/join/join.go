@@ -36,7 +36,7 @@ func NewJoinCmd() *cobra.Command {
 			if inviteCid == "" || inviteFileKey == "" {
 				parsedCid, parsedKey, err := parseInviteLink(input)
 				if err != nil {
-					return output.Error("invalid invite link: %w", err)
+					return output.Error("Invalid invite link: %w", err)
 				}
 				if inviteCid == "" {
 					inviteCid = parsedCid
@@ -47,10 +47,10 @@ func NewJoinCmd() *cobra.Command {
 			}
 
 			if inviteCid == "" {
-				return output.Error("invite link missing cid")
+				return output.Error("Invite link missing cid")
 			}
 			if inviteFileKey == "" {
-				return output.Error("invite link missing key")
+				return output.Error("Invite link missing key")
 			}
 
 			info, err := core.ViewSpaceInvite(inviteCid, inviteFileKey)
