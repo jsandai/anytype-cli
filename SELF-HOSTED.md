@@ -1,33 +1,18 @@
 # Self-Hosted Network Setup
 
-Guide for connecting `anytype-cli` to a self-hosted Anytype network ([any-sync](https://github.com/anyproto/any-sync)).
+This guide covers connecting to a self-hosted [any-sync](https://github.com/anyproto/any-sync) network. For general installation and usage, see [README.md](README.md).
 
 ## Prerequisites
 
-- Self-hosted Anytype network running
-- Network config YAML file with your node addresses
-- Go 1.24+ and Make (for building from source)
+- Anytype CLI installed (see [README.md#installation](README.md#installation))
+- Self-hosted any-sync network running
+- Network configuration YAML from your deployment
 
-## Quick Start
+## Network Configuration
 
-### 1. Install
+### 1. Create Network Config File
 
-**Option A: Install script**
-```bash
-/usr/bin/env bash -c "$(curl -fsSL https://raw.githubusercontent.com/anyproto/anytype-cli/HEAD/install.sh)"
-```
-
-**Option B: Build from source**
-```bash
-git clone https://github.com/anyproto/anytype-cli.git
-cd anytype-cli
-make build
-# Binary: anytype
-```
-
-### 2. Prepare Network Config
-
-Save your network configuration (from your any-sync deployment):
+Save your network configuration from your any-sync deployment:
 
 ```yaml
 # ~/.config/anytype/network.yml
@@ -55,74 +40,55 @@ nodes:
       - file
 ```
 
-### 3. Create Account
+### 2. Create Account with Network Config
+
+Use the `--network-config` flag when creating your account:
 
 ```bash
 anytype auth create my-bot --network-config ~/.config/anytype/network.yml
 ```
 
-**⚠️ Save the account key!** It's your only authentication credential.
+Save the account key - it's your only authentication credential. The network config path is saved to `~/.anytype/config.json` for future operations.
 
-This persists the network config path to `~/.anytype/config.json` for future commands.
-
-### 4. Start Server
+### 3. Start Server
 
 ```bash
 anytype serve
 ```
 
-The server must be running for most operations. Use `--quiet` for less output or `--verbose` for debugging.
+The server will connect to your self-hosted network using the saved configuration.
 
-### 5. Join a Space
+## Joining Spaces
 
-Generate an invite link from the Anytype app (connected to your self-hosted network), then:
+Generate an invite link from the Anytype app connected to your self-hosted network, then join:
 
 ```bash
 anytype space join "<invite-link>"
 ```
 
-Supported invite formats:
+The CLI automatically uses the cached network ID from your config. Supported invite formats:
 - `https://<host>/<cid>#<key>` (web invite)
 - `anytype://invite/?cid=<cid>&key=<key>` (app deep link)
 
-### 6. Use the CLI
-
-```bash
-# List spaces
-anytype space list
-
-# Create API key for REST access
-anytype auth apikey create "my-key"
-
-# Use REST API
-curl -H "Authorization: Bearer <api-key>" http://127.0.0.1:31012/v1/spaces
-```
-
-## Config Files
-
-| File | Purpose |
-|------|---------|
-| `~/.anytype/config.json` | Account ID, network config path, cached network ID |
-| `~/.config/anytype/network.yml` | Your self-hosted network nodes |
-| System keyring | Account key, session tokens |
-
-## Ports
-
-| Port | Service |
-|------|---------|
-| 31010 | gRPC server |
-| 31011 | gRPC Web proxy |
-| 31012 | REST API |
-
 ## Troubleshooting
 
-| Error | Solution |
-|-------|----------|
-| `network id mismatch` | Re-create account with `--network-config` pointing to correct YAML |
-| `DeadlineExceeded` | Check network connectivity to your self-hosted nodes |
-| `no ns peers configured` | Normal for self-hosted — naming service is cloud-only |
-| `membership status` errors | Normal for self-hosted — membership is cloud-only |
+**`network id mismatch`**
+Re-create your account with `--network-config` pointing to the correct YAML file.
 
-## API Documentation
+**`DeadlineExceeded`**
+Check network connectivity to your self-hosted nodes.
 
-Full REST API reference: https://developers.anytype.io
+**`no ns peers configured`** / **`membership status`**
+These warnings are expected on self-hosted networks (naming service and membership are only available on the Anytype Network).
+
+## Configuration Files
+
+Self-hosted networks use these additional config entries:
+
+| File | Field | Purpose |
+|------|-------|---------|
+| `~/.anytype/config.json` | `networkConfigPath` | Path to your network YAML |
+| `~/.anytype/config.json` | `networkId` | Cached network ID for space joins |
+| `~/.config/anytype/network.yml` | - | Your self-hosted network nodes |
+
+For other configuration details, see [README.md](README.md).
