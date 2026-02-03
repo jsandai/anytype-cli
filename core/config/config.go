@@ -16,6 +16,7 @@ type Config struct {
 	AccountKey        string `json:"accountKey,omitempty"`
 	SessionToken      string `json:"sessionToken,omitempty"`
 	NetworkConfigPath string `json:"networkConfigPath,omitempty"` // Path to custom network config YAML (self-hosted)
+	NetworkId         string `json:"networkId,omitempty"`         // Cached network ID for self-hosted networks
 }
 
 var (
@@ -138,6 +139,14 @@ func (cm *ConfigManager) SetAccountKey(accountKey string) error {
 func (cm *ConfigManager) SetNetworkConfigPath(path string) error {
 	cm.mu.Lock()
 	cm.config.NetworkConfigPath = path
+	cm.mu.Unlock()
+
+	return cm.Save()
+}
+
+func (cm *ConfigManager) SetNetworkId(networkId string) error {
+	cm.mu.Lock()
+	cm.config.NetworkId = networkId
 	cm.mu.Unlock()
 
 	return cm.Save()
