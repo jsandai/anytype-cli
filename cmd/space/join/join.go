@@ -29,12 +29,10 @@ func NewJoinCmd() *cobra.Command {
 			input := args[0]
 			var spaceId string
 
-			// Load network ID: prefer flag, then cached, then YAML, then default
 			if networkId == "" {
 				networkId = resolveNetworkId()
 			}
 
-			// Parse invite link if cid/key not provided via flags
 			if inviteCid == "" || inviteFileKey == "" {
 				parsedCid, parsedKey, err := parseInviteLink(input)
 				if err != nil {
@@ -79,20 +77,15 @@ func NewJoinCmd() *cobra.Command {
 	return cmd
 }
 
-// resolveNetworkId returns the network ID using fallback chain:
-// 1. Cached networkId in config
-// 2. Read from YAML (and cache it)
-// 3. Default Anytype network
+// resolveNetworkId returns the network ID using this fallback chain:
+// cached config → YAML file → default Anytype network.
 func resolveNetworkId() string {
-	// Try cached networkId first
 	if cachedId, err := config.GetNetworkIdFromConfig(); err == nil && cachedId != "" {
 		return cachedId
 	}
 
-	// Try reading from YAML config path
 	if yamlPath, _ := config.GetNetworkConfigPathFromConfig(); yamlPath != "" {
 		if id, err := config.ReadNetworkIdFromYAML(yamlPath); err == nil && id != "" {
-			// Cache for future use
 			_ = config.SetNetworkIdToConfig(id)
 			return id
 		}
@@ -101,10 +94,8 @@ func resolveNetworkId() string {
 	return config.AnytypeNetworkAddress
 }
 
-// parseInviteLink parses invite links in multiple formats:
-// - https://<host>/<cid>#<key> (standard web format)
-// - http://<host>/<cid>#<key> (local/dev)
-// - anytype://invite/?cid=<cid>&key=<key> (app deep link)
+// parseInviteLink parses web invites (https://<host>/<cid>#<key>) and
+// app deep links (anytype://invite/?cid=<cid>&key=<key>).
 func parseInviteLink(input string) (cid string, key string, err error) {
 	u, err := url.Parse(input)
 	if err != nil {
@@ -113,7 +104,6 @@ func parseInviteLink(input string) (cid string, key string, err error) {
 
 	switch u.Scheme {
 	case "https", "http":
-		// Standard web invite: https://<host>/<cid>#<key>
 		if u.Host == "" {
 			return "", "", fmt.Errorf("invite link missing host")
 		}
@@ -121,9 +111,11 @@ func parseInviteLink(input string) (cid string, key string, err error) {
 		if path == "" {
 			return "", "", fmt.Errorf("invite link missing cid in path")
 		}
-		// Handle paths like /cid or /prefix/cid
 		parts := strings.Split(path, "/")
 		cid = parts[len(parts)-1]
+		if cid == "" {
+			return "", "", fmt.Errorf("invite link missing cid in path")
+		}
 		key = u.Fragment
 		if key == "" {
 			return "", "", fmt.Errorf("invite link missing key (should be after #)")
@@ -131,7 +123,6 @@ func parseInviteLink(input string) (cid string, key string, err error) {
 		return cid, key, nil
 
 	case "anytype":
-		// App deep link: anytype://invite/?cid=<cid>&key=<key>
 		if !strings.HasPrefix(u.Path, "/invite") && u.Host != "invite" {
 			return "", "", fmt.Errorf("unsupported anytype:// path (expected anytype://invite/...)")
 		}

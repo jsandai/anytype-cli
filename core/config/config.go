@@ -9,14 +9,14 @@ import (
 )
 
 type Config struct {
-	AccountId   string `json:"accountId,omitempty"`
-	TechSpaceId string `json:"techSpaceId,omitempty"`
+	AccountId         string `json:"accountId,omitempty"`
+	TechSpaceId       string `json:"techSpaceId,omitempty"`
+	NetworkConfigPath string `json:"networkConfigPath,omitempty"`
+	NetworkId         string `json:"networkId,omitempty"`
 	// Credentials stored in plain text - only used when keyring is unavailable
 	// WARNING: This is insecure and should only be used on headless servers
-	AccountKey        string `json:"accountKey,omitempty"`
-	SessionToken      string `json:"sessionToken,omitempty"`
-	NetworkConfigPath string `json:"networkConfigPath,omitempty"` // Path to custom network config YAML (self-hosted)
-	NetworkId         string `json:"networkId,omitempty"`         // Cached network ID for self-hosted networks
+	AccountKey   string `json:"accountKey,omitempty"`
+	SessionToken string `json:"sessionToken,omitempty"`
 }
 
 var (

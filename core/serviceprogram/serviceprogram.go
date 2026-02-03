@@ -138,7 +138,6 @@ func (p *Program) attemptAutoLogin() {
 		return
 	}
 
-	// Load network config path if configured (for self-hosted networks)
 	networkConfigPath, _ := config.GetNetworkConfigPathFromConfig()
 
 	output.Info("Found stored account key, attempting auto-login...")

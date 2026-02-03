@@ -17,6 +17,14 @@ import (
 	"github.com/anyproto/anytype-cli/core/output"
 )
 
+// determineNetworkMode returns the appropriate network mode based on whether a custom network config is provided.
+func determineNetworkMode(networkConfigPath string) pb.RpcAccount_NetworkMode {
+	if networkConfigPath != "" {
+		return pb.RpcAccount_CustomConfig
+	}
+	return pb.RpcAccount_DefaultConfig
+}
+
 // Authenticate performs the full authentication flow for a bot account using an account key.
 // This includes wallet recovery, session creation, account recovery, account selection, and config persistence.
 // If networkConfigPath is provided, connects to that custom network.
@@ -28,11 +36,7 @@ func Authenticate(accountKey, rootPath, apiAddr, networkConfigPath string) error
 		apiAddr = config.DefaultAPIAddress
 	}
 
-	// Determine network mode
-	networkMode := pb.RpcAccount_DefaultConfig
-	if networkConfigPath != "" {
-		networkMode = pb.RpcAccount_CustomConfig
-	}
+	networkMode := determineNetworkMode(networkConfigPath)
 
 	var sessionToken string
 	err := GRPCCallNoAuth(func(ctx context.Context, client service.ClientCommandsClient) error {
@@ -182,7 +186,6 @@ func Login(accountKey, rootPath, apiAddr, networkConfigPath string) error {
 		return err
 	}
 
-	// Save network config path for future use (e.g., serve command)
 	if networkConfigPath != "" {
 		if err := config.SetNetworkConfigPathToConfig(networkConfigPath); err != nil {
 			output.Warning("Failed to save network config path: %v", err)
@@ -267,11 +270,7 @@ func CreateWallet(name, rootPath, apiAddr, networkConfigPath string) (string, st
 		apiAddr = config.DefaultAPIAddress
 	}
 
-	// Determine network mode
-	networkMode := pb.RpcAccount_DefaultConfig
-	if networkConfigPath != "" {
-		networkMode = pb.RpcAccount_CustomConfig
-	}
+	networkMode := determineNetworkMode(networkConfigPath)
 
 	var sessionToken string
 	var accountKey string
